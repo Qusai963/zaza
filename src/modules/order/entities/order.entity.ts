@@ -22,8 +22,8 @@ export class Order {
   @Column()
   totalPrice: number;
 
-  @ManyToOne(() => User, user => user.orders)
-  user: User;
+  // @ManyToOne(() => User, user => user.orders)
+  // user: User;
 
   @OneToMany(() => ProductOrder, productOrder => productOrder.order)
   productOrders: ProductOrder[];

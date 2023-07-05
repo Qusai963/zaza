@@ -15,6 +15,6 @@ export class DiscountSpecificUser {
   @ManyToOne(() => Product, product => product.discountSpecificUsers)
   product: Product;
 
-  @ManyToOne(() => User, user => user.discountSpecificUsers)
-  user: User;
+  // @ManyToOne(() => User, user => user.discountSpecificUsers)
+  // user: User;
 }
