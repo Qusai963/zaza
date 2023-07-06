@@ -22,8 +22,8 @@ export class User {
   @Column()
   email: string;
 
-  // @OneToMany(() => Product, (product) => product.user)
-  // products: Product[];
+  @OneToMany(() => Product, (product) => product.user)
+  products: Product[];
 
   // @OneToMany(
   //   () => DiscountSpecificUser,

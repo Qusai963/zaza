@@ -7,13 +7,17 @@ import {
   Column,
   OneToMany,
 } from 'typeorm';
+
 @Entity()
 export class Category {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ nullable: true })
+  @Column({ default: 0 })
   number: number;
+
+  @Column()
+  textContentId: number;
 
   @ManyToOne(() => Category, (category) => category.categories)
   category: Category;

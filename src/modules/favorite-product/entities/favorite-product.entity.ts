@@ -9,8 +9,8 @@ export class FavoriteProduct {
   @Column()
   userName: string;
 
-  @ManyToOne(() => Product, (product) => product.favoriteProducts)
-  product: Product;
+  // @ManyToOne(() => Product, (product) => product.favoriteProducts)
+  // product: Product;
 
   // @ManyToOne(() => User, (user) => user.favoriteProducts)
   // user: User;

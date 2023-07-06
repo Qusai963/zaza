@@ -1,16 +1,18 @@
 import { TextContent } from 'src/modules/text-content/entities/text-content.entity';
 import { Translation } from 'src/modules/translation/entities/translation.entity';
-import { Column, Entity, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
+import {
+  Column,
+  Entity,
+  OneToMany,
+  PrimaryColumn,
+} from 'typeorm';
 
-@Entity()
+@Entity('languages')
 export class Language {
-  @PrimaryGeneratedColumn()
-  id: number;
-
-  @Column()
+  @PrimaryColumn('char', { length: 5 })
   code: string;
 
-  @Column()
+  @Column('varchar', { length: 45 })
   name: string;
 
   @OneToMany(() => TextContent, (textContent) => textContent.language)

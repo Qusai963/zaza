@@ -16,7 +16,7 @@ export class Discount {
   @Column()
   productId: number;
 
-  @Column()
+  @Column('double')
   percent: number;
 
   @CreateDateColumn()

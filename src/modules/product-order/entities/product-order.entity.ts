@@ -4,17 +4,17 @@ import { Column, Entity, ManyToOne } from 'typeorm';
 @Entity()
 export class ProductOrder {
   @Column()
-  product_id: number;
+  productId: number;
 
   @Column()
-  order_id: number;
+  orderId: number;
 
   @Column()
   amount: number;
 
-  @ManyToOne(() => Product, (product) => product.productOrders)
-  product: Product;
+  // @ManyToOne(() => Product, (product) => product.productOrders)
+  // product: Product;
 
-  @ManyToOne(() => Order, (order) => order.productOrders)
-  order: Order;
+  // @ManyToOne(() => Order, (order) => order.productOrders)
+  // order: Order;
 }

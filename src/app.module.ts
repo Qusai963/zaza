@@ -15,6 +15,7 @@ import { DiscountSpecificUserModule } from './modules/discount-specific-user/dis
 import { dataSourceOptions } from 'db/data-source';
 import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './modules/auth/auth.module';
+import { TaxModule } from './modules/tax/tax.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { AuthModule } from './modules/auth/auth.module';
     TranslationModule,
     DiscountSpecificUserModule,
     AuthModule,
+    TaxModule,
   ],
   controllers: [],
   providers: [],
