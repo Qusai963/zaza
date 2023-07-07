@@ -1,11 +1,6 @@
 import { TextContent } from 'src/modules/text-content/entities/text-content.entity';
 import { Translation } from 'src/modules/translation/entities/translation.entity';
-import {
-  Column,
-  Entity,
-  OneToMany,
-  PrimaryColumn,
-} from 'typeorm';
+import { Column, Entity, OneToMany, PrimaryColumn } from 'typeorm';
 
 @Entity('languages')
 export class Language {
