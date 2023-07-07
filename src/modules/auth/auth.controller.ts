@@ -17,6 +17,7 @@ import { CreateUserDto } from '../user/dto/create-user.dto';
 import { getUserId } from '../user/helper/get-user-id.helper';
 import { DoesUserExistGuard } from '../user/guards/does-user-exist.guard';
 import { LocalAuthGuard } from './guard/local-auth.guard';
+import { catchingError } from 'src/core/error/helper/catching-error';
 
 @Controller('auth')
 export class AuthController {
@@ -29,19 +30,31 @@ export class AuthController {
   @UseGuards(LocalAuthGuard)
   @Post('login')
   async login(@Body() signInDto: SignInDto) {
-    return await this.authService.logIn(signInDto);
+    try {
+      return await this.authService.logIn(signInDto);
+    } catch (error) {
+      catchingError(error, this.request);
+    }
   }
 
   @UseGuards(DoesUserExistGuard)
   @Post('signup')
-  signUp(@Body() user: CreateUserDto) {
-    return this.authService.create(user);
+  async signUp(@Body() createUserDto: CreateUserDto) {
+    try {
+      return await this.authService.create(createUserDto);
+    } catch (error) {
+      catchingError(error, this.request);
+    }
   }
 
   @UseGuards(AuthGuard)
   @Get('profile')
   async getProfile() {
-    const userId = getUserId(this.request);
-    return await this.authService.profile(userId);
+    try {
+      const userId = getUserId(this.request);
+      return await this.authService.profile(userId);
+    } catch (error) {
+      catchingError(error, this.request);
+    }
   }
 }

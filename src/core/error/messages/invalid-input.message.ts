@@ -1,4 +1,4 @@
-import { ErrorMessage } from "../error-message";
+import { ErrorMessage } from './classes/error-message';
 
 export const INVALID_INPUT = new ErrorMessage({
   en: 'Invalid input.',

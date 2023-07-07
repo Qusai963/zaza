@@ -1,4 +1,4 @@
-import { ErrorMessage } from '../error-message';
+import { ErrorMessage } from './classes/error-message';
 
 export const EMAIL_EXISTS = new ErrorMessage({
   en: 'email already exists.',

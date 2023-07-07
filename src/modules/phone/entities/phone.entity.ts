@@ -8,6 +8,9 @@ export class Phone {
   @Column()
   number: string;
 
-  // @ManyToOne(() => User, user => user.phones)
-  // user: User;
+  @Column()
+  userId: number;
+
+  @ManyToOne(() => User, (user) => user.phones)
+  user: User;
 }

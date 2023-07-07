@@ -6,9 +6,9 @@ import {
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { UserService } from '../user.service';
-import { USER_NAME_EXISTS } from 'src/core/error-message/messages/user-name-exists.message';
+import { USER_NAME_EXISTS } from 'src/core/error/messages/user-name-exists.message';
 import { getLanguageFromRequest } from 'src/modules/language/helper/get-language-code.helper';
-import { EMAIL_EXISTS } from 'src/core/error-message/messages/email-exists.message';
+import { EMAIL_EXISTS } from 'src/core/error/messages/email-exists.message';
 
 @Injectable()
 export class DoesUserExistGuard implements CanActivate {

@@ -38,16 +38,17 @@ export class AuthService {
     };
   }
 
-  public async create(user: CreateUserDto) {
-    // hash the password
-    const pass = await this.hashPassword(user.password);
+  public async create(createUserDto: CreateUserDto) {
+    const password = await this.hashPassword(createUserDto.password);
 
-    // create the user
-    const newUser = await this.userService.create({ ...user, password: pass });
+    const user = await this.userService.create({
+      ...createUserDto,
+      password,
+    });
 
-    const token = await this.generateToken(newUser);
+    const accessToken = await this.generateToken(user);
 
-    return { accessToken: token, user: newUser };
+    return { accessToken, user };
   }
 
   public async profile(userId: number) {
@@ -56,7 +57,7 @@ export class AuthService {
   }
 
   private async generateToken(user: User) {
-    const payload = { userName: user.userName, sub: user.id };
+    const payload = { email: user.email, sub: user.id };
     const token = await this.jwtService.signAsync(payload);
     return token;
   }

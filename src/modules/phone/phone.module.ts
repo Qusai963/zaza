@@ -1,9 +1,15 @@
 import { Module } from '@nestjs/common';
 import { PhoneService } from './phone.service';
 import { PhoneController } from './phone.controller';
+import { JwtService } from '@nestjs/jwt';
+import { UserService } from '../user/user.service';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { User } from '../user/entities/user.entity';
+import { Phone } from './entities/phone.entity';
 
 @Module({
+  imports: [TypeOrmModule.forFeature([User, Phone])],
   controllers: [PhoneController],
-  providers: [PhoneService]
+  providers: [PhoneService, JwtService, UserService],
 })
 export class PhoneModule {}

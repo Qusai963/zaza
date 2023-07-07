@@ -2,6 +2,7 @@ import { config } from 'dotenv';
 import { Category } from 'src/modules/category/entities/category.entity';
 import { Discount } from 'src/modules/discount/entities/discount.entity';
 import { Language } from 'src/modules/language/entities/language.entity';
+import { Phone } from 'src/modules/phone/entities/phone.entity';
 import { Product } from 'src/modules/product/entities/product.entity';
 import { Tax } from 'src/modules/tax/entities/tax.entity';
 import { TextContent } from 'src/modules/text-content/entities/text-content.entity';
@@ -19,7 +20,17 @@ export const dataSourceOptions: DataSourceOptions = {
   username: process.env.DB_USER,
   password: process.env.DB_PASS,
   database: process.env.DB_NAME_DEVELOPMENT,
-  entities: [User, Language, TextContent, Translation, Tax, Category, Discount, Product],
+  entities: [
+    User,
+    Language,
+    TextContent,
+    Translation,
+    Tax,
+    Category,
+    Discount,
+    Product,
+    Phone,
+  ],
   synchronize: true,
   logging: true,
   namingStrategy: new SnakeNamingStrategy(),
