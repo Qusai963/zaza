@@ -43,7 +43,7 @@ export class Product {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @Column('tinyint', { default: 0 })
+  @Column('tinyint', { default: 0, width: 1 })
   isDeleted: number;
 
   @Column()
@@ -52,11 +52,11 @@ export class Product {
   @Column()
   userId: number;
 
+  @Column()
+  taxId: number;
+
   @ManyToOne(() => Category, (category) => category.products)
   category: Category;
-
-  @ManyToOne(() => User, (user) => user.products)
-  user: User;
 
   @ManyToOne(() => TextContent, (textContent) => textContent.products)
   textContent: TextContent;

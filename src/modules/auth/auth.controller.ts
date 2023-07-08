@@ -8,7 +8,7 @@ import {
   HttpCode,
   Inject,
 } from '@nestjs/common';
-import { AuthGuard } from './guard/auth.guard';
+import { AuthGuard } from './guards/auth.guard';
 import { AuthService } from './auth.service';
 import { SignInDto } from './dto/sign-in.dto';
 import { REQUEST } from '@nestjs/core';
@@ -16,7 +16,7 @@ import { Request } from 'express';
 import { CreateUserDto } from '../user/dto/create-user.dto';
 import { getUserId } from '../user/helper/get-user-id.helper';
 import { DoesUserExistGuard } from '../user/guards/does-user-exist.guard';
-import { LocalAuthGuard } from './guard/local-auth.guard';
+import { LocalAuthGuard } from './guards/local-auth.guard';
 import { catchingError } from 'src/core/error/helper/catching-error';
 
 @Controller('auth')

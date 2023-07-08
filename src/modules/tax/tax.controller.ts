@@ -1,15 +1,37 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Inject,
+  UseGuards,
+} from '@nestjs/common';
 import { TaxService } from './tax.service';
 import { CreateTaxDto } from './dto/create-tax.dto';
 import { UpdateTaxDto } from './dto/update-tax.dto';
+import { catchingError } from 'src/core/error/helper/catching-error';
+import { REQUEST } from '@nestjs/core';
+import { Request } from 'express';
+import { DoesTextContentExistGuard } from '../text-content/guards/text-content-exists.guard';
 
 @Controller('tax')
 export class TaxController {
-  constructor(private readonly taxService: TaxService) {}
+  constructor(
+    private readonly taxService: TaxService,
+    @Inject(REQUEST) private request: Request,
+  ) {}
 
   @Post()
+  @UseGuards(DoesTextContentExistGuard)
   create(@Body() createTaxDto: CreateTaxDto) {
-    return this.taxService.create(createTaxDto);
+    try {
+      return this.taxService.create(createTaxDto);
+    } catch (error) {
+      catchingError(error, this.request);
+    }
   }
 
   @Get()

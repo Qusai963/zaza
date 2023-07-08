@@ -15,7 +15,7 @@ import { UpdateTextContentDto } from './dto/update-text-content.dto';
 import { REQUEST } from '@nestjs/core';
 import { Request } from 'express';
 import { catchingError } from 'src/core/error/helper/catching-error';
-import { DoesLanguageCodeExistGuard } from '../language/guard/does-language-code-exist.guard';
+import { DoesLanguageCodeExistGuard } from '../language/guards/does-language-code-exist.guard';
 
 @Controller('text-content')
 export class TextContentController {

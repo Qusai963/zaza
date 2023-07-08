@@ -7,7 +7,7 @@ import { AuthController } from './auth.controller';
 import { UserModule } from '../user/user.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from '../user/entities/user.entity';
-import { LocalStrategy } from './strategy/local.strategy';
+import { LocalStrategy } from './strategies/local.strategy';
 import { Phone } from '../phone/entities/phone.entity';
 
 @Module({

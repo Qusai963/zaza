@@ -10,7 +10,7 @@ export class User {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ unique: true })
   userName: string;
 
   @Column()
@@ -19,11 +19,8 @@ export class User {
   @Column({ select: false })
   password: string;
 
-  @Column()
+  @Column({ unique: true })
   email: string;
-
-  @OneToMany(() => Product, (product) => product.user)
-  products: Product[];
 
   // @OneToMany(
   //   () => DiscountSpecificUser,

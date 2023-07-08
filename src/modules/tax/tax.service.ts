@@ -1,11 +1,19 @@
 import { Injectable } from '@nestjs/common';
 import { CreateTaxDto } from './dto/create-tax.dto';
 import { UpdateTaxDto } from './dto/update-tax.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Tax } from './entities/tax.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class TaxService {
+  constructor(
+    @InjectRepository(Tax)
+    private readonly taxRepository: Repository<Tax>,
+  ) {}
   create(createTaxDto: CreateTaxDto) {
-    return 'This action adds a new tax';
+    const tax = this.taxRepository.create(createTaxDto);
+    return this.taxRepository.save(tax);
   }
 
   findAll() {

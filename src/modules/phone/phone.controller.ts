@@ -16,9 +16,9 @@ import { PhoneService } from './phone.service';
 import { CreatePhoneDto } from './dto/create-phone.dto';
 import { UpdatePhoneDto } from './dto/update-phone.dto';
 import { catchingError } from 'src/core/error/helper/catching-error';
-import { AuthGuard } from '../auth/guard/auth.guard';
+import { AuthGuard } from '../auth/guards/auth.guard';
 import { getUserId } from '../user/helper/get-user-id.helper';
-import { DoesPhoneNumberExistGuard } from './guard/Does-phone-number-exists.guard';
+import { DoesPhoneNumberExistGuard } from './guards/Does-phone-number-exists.guard';
 
 @Controller('phone')
 export class PhoneController {
