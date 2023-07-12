@@ -13,7 +13,8 @@ export class LanguageService {
   ) {}
 
   create(createLanguageDto: CreateLanguageDto) {
-    return 'This action adds a new language';
+    const language = this.languageRepository.create(createLanguageDto);
+    return this.languageRepository.save(language);
   }
 
   findAll() {

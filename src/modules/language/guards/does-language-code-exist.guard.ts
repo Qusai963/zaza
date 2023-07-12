@@ -13,10 +13,11 @@ export class DoesLanguageCodeExistGuard implements CanActivate {
     const ctx = context.switchToHttp();
     const request = ctx.getRequest();
 
-    const code = request.body.code;
+    let code = request.body.code;
 
-    const isCodeExist = await this.languageService.findByCode(code);
-    if (!isCodeExist) throw new BadRequestException();
+    const doesCodeExist = await this.languageService.findByCode(code);
+    if (!doesCodeExist)
+      throw new BadRequestException('Language code does not exist');
 
     return true;
   }

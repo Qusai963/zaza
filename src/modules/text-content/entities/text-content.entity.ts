@@ -20,11 +20,11 @@ export class TextContent {
   originalText: string;
 
   @ManyToOne(() => Language, (language) => language.textContents)
-  @JoinColumn({ name: 'original_language_code' })
+  @JoinColumn({ name: 'code' })
   language: Language;
 
-  @Column('char', { length: 5, default: 'de' })
-  originalLanguageCode: string;
+  @Column('varchar', { length: 5, default: 'de' })
+  code: string;
 
   @OneToMany(() => Category, (category) => category.textContent)
   categories: Category[];
@@ -32,7 +32,9 @@ export class TextContent {
   @OneToMany(() => Product, (product) => product.textContent)
   products: Product[];
 
-  @OneToMany(() => Translation, (translation) => translation.textContent)
+  @OneToMany(() => Translation, (translation) => translation.textContent, {
+    eager: true,
+  })
   translations: Translation[];
 
   @OneToMany(() => Tax, (tax) => tax.textContent)

@@ -31,7 +31,7 @@ export class User {
   // @OneToMany(() => Order, (order) => order.user)
   // orders: Order[];
 
-  @OneToMany(() => Phone, (phone) => phone.user, { cascade: true })
+  @OneToMany(() => Phone, (phone) => phone.user, { eager: true })
   phones: Phone[];
 
   // @OneToMany(() => FavoriteProduct, (favoriteProducts) => favoriteProducts.user)

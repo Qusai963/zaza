@@ -16,6 +16,9 @@ export class Category {
   @Column({ default: 0 })
   number: number;
 
+  @Column({ default: null })
+  categoryId: number;
+
   @Column()
   textContentId: number;
 

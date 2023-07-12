@@ -4,7 +4,7 @@ import { Column, Entity, OneToMany, PrimaryColumn } from 'typeorm';
 
 @Entity('languages')
 export class Language {
-  @PrimaryColumn('char', { length: 5 })
+  @PrimaryColumn('varchar', { length: 5 })
   code: string;
 
   @Column('varchar', { length: 45 })

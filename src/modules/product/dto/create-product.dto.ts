@@ -14,16 +14,12 @@ export class CreateProductDto {
   readonly picture: string;
 
   @IsOptional()
-  @IsString() 
+  @IsString()
   readonly barcode: string;
 
   @IsNotEmpty()
   @IsNumber()
   readonly categoryId: number;
-
-  @IsNotEmpty()
-  @IsNumber()
-  readonly textContentId: number;
 
   @IsNotEmpty()
   @IsNumber()

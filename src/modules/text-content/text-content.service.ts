@@ -12,10 +12,7 @@ export class TextContentService {
     private readonly textContentRepository: Repository<TextContent>,
   ) {}
   async create(createTextContentDto: CreateTextContentDto) {
-    const textContent = this.textContentRepository.create({
-      originalLanguageCode: createTextContentDto.code,
-      ...createTextContentDto,
-    });
+    const textContent = this.textContentRepository.create(createTextContentDto);
 
     return this.textContentRepository.save(textContent);
   }

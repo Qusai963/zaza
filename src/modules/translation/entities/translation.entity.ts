@@ -12,13 +12,13 @@ export class Translation {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column('char', { length: 5 })
-  languageCode: string;
+  @Column('varchar', { length: 5 })
+  code: string;
 
   @Column()
   textContentId: number;
 
-  @Column()
+  @Column({ length: 45 })
   translation: string;
 
   @ManyToOne(() => Language, (language) => language.translations)
