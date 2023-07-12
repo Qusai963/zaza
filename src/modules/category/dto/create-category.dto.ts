@@ -1,15 +1,16 @@
-import { IsNotEmpty, IsNumber, IsOptional } from 'class-validator';
+import { IsArray, IsNotEmpty, IsNumber, IsOptional } from 'class-validator';
+import { CreateTextContentDto } from 'src/modules/text-content/dto/create-text-content.dto';
+import { SecondCreateTranslationDto } from 'src/modules/translation/dto/create-translation.dto';
 
 export class CreateCategoryDto {
   @IsOptional()
   @IsNumber()
-  categoryId: number;
+  readonly categoryId: number;
 
   @IsNotEmpty()
-  @IsNumber()
-  textContentId: number;
+  readonly textContent: CreateTextContentDto;
 
   @IsOptional()
-  @IsNumber()
-  number: number;
+  @IsArray()
+  readonly translation: SecondCreateTranslationDto[];
 }

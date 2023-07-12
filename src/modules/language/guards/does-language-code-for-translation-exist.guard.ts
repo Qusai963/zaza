@@ -4,7 +4,6 @@ import {
   ExecutionContext,
   BadRequestException,
 } from '@nestjs/common';
-import { LanguageService } from '../language.service';
 import { In, Repository } from 'typeorm';
 import { Language } from '../entities/language.entity';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -31,7 +30,7 @@ export class DoesLanguageCodeForTranslationExistGuard implements CanActivate {
       },
     });
     if (codeCount != code.length)
-      throw new BadRequestException('Language code does not exist');
+      throw new BadRequestException('Language code in translation does not exist');
 
     return true;
   }

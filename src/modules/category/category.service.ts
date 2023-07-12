@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { CreateCategoryDto } from './dto/create-category.dto';
+import { CreateCategoryDto as number } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Category } from './entities/category.entity';
+import { TextContent } from '../text-content/entities/text-content.entity';
 
 @Injectable()
 export class CategoryService {
@@ -11,8 +12,12 @@ export class CategoryService {
     @InjectRepository(Category)
     private readonly categoryRepository: Repository<Category>,
   ) {}
-  create(createCategoryDto: CreateCategoryDto) {
-    const category = this.categoryRepository.create(createCategoryDto);
+  create(parentCategoryId: number, textContent: TextContent) {
+    const category = this.categoryRepository.create({
+      categoryId: parentCategoryId,
+    });
+
+    category.textContent = textContent;
 
     return this.categoryRepository.save(category);
   }
