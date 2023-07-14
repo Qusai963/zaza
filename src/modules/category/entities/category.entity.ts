@@ -25,7 +25,9 @@ export class Category {
   @ManyToOne(() => Category, (category) => category.categories)
   category: Category;
 
-  @ManyToOne(() => TextContent, (textContent) => textContent.categories)
+  @ManyToOne(() => TextContent, (textContent) => textContent.categories, {
+    eager: true,
+  })
   textContent: TextContent;
 
   @OneToMany(() => Product, (product) => product.category)

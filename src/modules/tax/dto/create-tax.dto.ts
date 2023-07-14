@@ -1,9 +1,12 @@
-import { IsNotEmpty } from 'class-validator';
+import { IsArray, IsNotEmpty, IsString, Max, Min } from 'class-validator';
 
 export class CreateTaxDto {
   @IsNotEmpty()
-  percent: number;
+  @Min(0.1)
+  @Max(99.99)
+  readonly percent: number;
 
   @IsNotEmpty()
-  textContentId: number;
+  @IsString()
+  readonly name: string;
 }

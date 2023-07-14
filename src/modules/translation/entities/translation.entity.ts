@@ -22,7 +22,7 @@ export class Translation {
   translation: string;
 
   @ManyToOne(() => Language, (language) => language.translations)
-  @JoinColumn()
+  @JoinColumn({ name: 'code' })
   language: Language;
 
   @ManyToOne(() => TextContent, (textContent) => textContent.translations)

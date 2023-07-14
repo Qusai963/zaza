@@ -4,6 +4,7 @@ import { UpdateTaxDto } from './dto/update-tax.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Tax } from './entities/tax.entity';
 import { Repository } from 'typeorm';
+import { TextContent } from '../text-content/entities/text-content.entity';
 
 @Injectable()
 export class TaxService {
@@ -11,8 +12,9 @@ export class TaxService {
     @InjectRepository(Tax)
     private readonly taxRepository: Repository<Tax>,
   ) {}
-  create(createTaxDto: CreateTaxDto) {
+  create(createTaxDto: CreateTaxDto, textContent: TextContent) {
     const tax = this.taxRepository.create(createTaxDto);
+    tax.textContent = textContent;
     return this.taxRepository.save(tax);
   }
 

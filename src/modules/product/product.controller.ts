@@ -21,6 +21,7 @@ import { TextContentService } from '../text-content/text-content.service';
 import { TranslationService } from '../translation/translation.service';
 import { DoesProductCategoryExistGuard } from '../category/guards/does-product-category-exists.guard';
 import { DoesLanguageCodeForTranslationExistGuard } from '../language/guards/does-language-code-for-translation-exist.guard';
+import { DoesLanguageCodeForTextContentExistGuard } from '../language/guards/does-language-code-for-textContent-exist.guard';
 
 @Controller('product')
 export class ProductController {
@@ -34,7 +35,7 @@ export class ProductController {
   @UseGuards(
     DoesProductTaxExistGuard,
     DoesProductCategoryExistGuard,
-    DoesLanguageCodeExistGuard,
+    DoesLanguageCodeForTextContentExistGuard,
     DoesLanguageCodeForTranslationExistGuard,
   )
   @Post()

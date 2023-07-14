@@ -18,6 +18,9 @@ export class Tax {
   percent: number;
 
   @Column()
+  name: string;
+
+  @Column()
   textContentId: number;
 
   @ManyToOne(() => TextContent, (textContent) => textContent.taxes)
