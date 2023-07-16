@@ -22,11 +22,13 @@ export class Category {
   @Column()
   textContentId: number;
 
-  @ManyToOne(() => Category, (category) => category.categories)
+  @ManyToOne(() => Category, (category) => category.categories, {
+    onDelete: 'CASCADE',
+  })
   category: Category;
 
   @ManyToOne(() => TextContent, (textContent) => textContent.categories, {
-    eager: true,
+    onDelete: 'CASCADE',
   })
   textContent: TextContent;
 

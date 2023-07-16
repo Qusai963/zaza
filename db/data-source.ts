@@ -32,7 +32,7 @@ export const dataSourceOptions: DataSourceOptions = {
     Phone,
   ],
   synchronize: true,
-  logging: true,
+  logging: false,
   namingStrategy: new SnakeNamingStrategy(),
 };
 

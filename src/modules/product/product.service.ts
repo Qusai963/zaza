@@ -29,6 +29,14 @@ export class ProductService {
     return `This action returns a #${id} product`;
   }
 
+  findAllAndCountByCategoryId(categoryId: number, limit: number, page: number) {
+    return this.productRepository.findAndCount({
+      where: { categoryId },
+      take: limit,
+      skip: (page - 1) * limit,
+    });
+  }
+
   update(id: number, updateProductDto: UpdateProductDto) {
     return `This action updates a #${id} product`;
   }

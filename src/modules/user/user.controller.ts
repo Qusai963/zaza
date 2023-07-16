@@ -1,3 +1,4 @@
+import { REQUEST } from '@nestjs/core';
 import {
   Controller,
   Get,
@@ -6,14 +7,20 @@ import {
   Patch,
   Param,
   Delete,
+  Inject,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { catchingError } from 'src/core/error/helper/catching-error';
+import { Request } from 'express';
 
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    @Inject(REQUEST) private request: Request,
+  ) {}
 
   @Post()
   create(@Body() createUserDto: CreateUserDto) {
@@ -22,7 +29,11 @@ export class UserController {
 
   @Get()
   findAll() {
-    return this.userService.findAll();
+    try {
+      return this.userService.findAll();
+    } catch (error) {
+      catchingError(error, this.request);
+    }
   }
 
   @Get(':id')

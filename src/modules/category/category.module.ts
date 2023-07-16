@@ -9,10 +9,26 @@ import { TextContentService } from '../text-content/text-content.service';
 import { TranslationService } from '../translation/translation.service';
 import { LanguageService } from '../language/language.service';
 import { Language } from '../language/entities/language.entity';
+import { ProductService } from '../product/product.service';
+import { Product } from '../product/entities/product.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Category, TextContent, Translation, Language])],
+  imports: [
+    TypeOrmModule.forFeature([
+      Category,
+      TextContent,
+      Translation,
+      Language,
+      Product,
+    ]),
+  ],
   controllers: [CategoryController],
-  providers: [CategoryService, TextContentService, TranslationService, LanguageService],
+  providers: [
+    CategoryService,
+    TextContentService,
+    TranslationService,
+    LanguageService,
+    ProductService,
+  ],
 })
 export class CategoryModule {}

@@ -19,18 +19,29 @@ export class TaxService {
   }
 
   findAll() {
-    return `This action returns all tax`;
+    return this.taxRepository.find({ where: { isDeleted: false } });
   }
 
   findOne(id: number) {
-    return `This action returns a #${id} tax`;
+    return this.taxRepository.findOneBy({ id, isDeleted: false });
   }
 
-  update(id: number, updateTaxDto: UpdateTaxDto) {
-    return `This action updates a #${id} tax`;
+  async update(id: number, updateTaxDto: UpdateTaxDto) {
+    const tax = await this.findOne(id);
+
+    Object.assign(tax, updateTaxDto);
+
+    const newTax = this.taxRepository.create(tax);
+
+    tax.isDeleted = true;
+
+    return this.taxRepository.save(newTax);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} tax`;
+  async remove(id: number) {
+    const tax = await this.findOne(id);
+    tax.isDeleted = true;
+
+    return this.taxRepository.save(tax);
   }
 }

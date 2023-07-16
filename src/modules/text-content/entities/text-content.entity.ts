@@ -33,7 +33,7 @@ export class TextContent {
   products: Product[];
 
   @OneToMany(() => Translation, (translation) => translation.textContent, {
-    eager: true,
+    onDelete: 'CASCADE',
   })
   translations: Translation[];
 

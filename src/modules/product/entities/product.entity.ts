@@ -55,15 +55,17 @@ export class Product {
   @Column()
   taxId: number;
 
-  @ManyToOne(() => Category, (category) => category.products, { eager: true })
+  @ManyToOne(() => Category, (category) => category.products, {
+    onDelete: 'CASCADE',
+  })
   category: Category;
 
   @ManyToOne(() => TextContent, (textContent) => textContent.products, {
-    eager: true,
+    onDelete: 'CASCADE',
   })
   textContent: TextContent;
 
-  @ManyToOne(() => Tax, (tax) => tax.products, { eager: true })
+  @ManyToOne(() => Tax, (tax) => tax.products)
   @JoinColumn()
   tax: Tax;
 

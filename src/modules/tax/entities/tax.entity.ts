@@ -23,6 +23,9 @@ export class Tax {
   @Column()
   textContentId: number;
 
+  @Column('tinyint', { default: 0, width: 1 })
+  isDeleted: boolean;
+
   @ManyToOne(() => TextContent, (textContent) => textContent.taxes)
   @JoinColumn()
   textContent: TextContent;

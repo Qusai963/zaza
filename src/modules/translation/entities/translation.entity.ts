@@ -6,16 +6,17 @@ import {
   PrimaryGeneratedColumn,
   ManyToOne,
   JoinColumn,
+  PrimaryColumn,
 } from 'typeorm';
 @Entity()
 export class Translation {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column('varchar', { length: 5 })
+  @PrimaryColumn('varchar', { length: 5 })
   code: string;
 
-  @Column()
+  @PrimaryColumn()
   textContentId: number;
 
   @Column({ length: 45 })

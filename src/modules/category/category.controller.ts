@@ -8,6 +8,7 @@ import {
   Delete,
   UseGuards,
   Inject,
+  Query,
 } from '@nestjs/common';
 import { CategoryService } from './category.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
@@ -20,6 +21,7 @@ import { TranslationService } from '../translation/translation.service';
 import { TextContentService } from '../text-content/text-content.service';
 import { DoesLanguageCodeForTextContentExistGuard } from '../language/guards/does-language-code-for-textContent-exist.guard';
 import { DoesLanguageCodeForTranslationExistGuard } from '../language/guards/does-language-code-for-translation-exist.guard';
+import { ParamRequired } from 'src/core/decorators/param-required.decorator';
 
 @Controller('category')
 export class CategoryController {
@@ -56,13 +58,27 @@ export class CategoryController {
   }
 
   @Get()
-  findAll() {
-    return this.categoryService.findAll();
+  findAllFathers(
+    @ParamRequired('limit') limit: string,
+    @ParamRequired('page') page: string,
+    @Query('language') language: string,
+  ) {
+    return this.categoryService.findAllFathers(+limit, +page, language);
+  }
+
+  @Get('findAllWithProducts')
+  findAllWithProducts(@Query('language') language: string) {
+    return this.categoryService.findAllWithProducts(language);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.categoryService.findOne(+id);
+  findOne(
+    @Param('id') id: string,
+    @ParamRequired('limit') limit: string,
+    @ParamRequired('page') page: string,
+    @Query('language') language: string,
+  ) {
+    return this.categoryService.findAllChildren(+id, +limit, +page, language);
   }
 
   @Patch(':id')
