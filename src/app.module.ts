@@ -1,3 +1,4 @@
+import { MulterModule } from '@nestjs/platform-express';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Module } from '@nestjs/common';
 import { UserModule } from './modules/user/user.module';
@@ -16,6 +17,7 @@ import { dataSourceOptions } from 'db/data-source';
 import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './modules/auth/auth.module';
 import { TaxModule } from './modules/tax/tax.module';
+import { ImagesModule } from './modules/images/images.module';
 
 @Module({
   imports: [
@@ -27,6 +29,7 @@ import { TaxModule } from './modules/tax/tax.module';
     CategoryModule,
     ProductModule,
     OrderModule,
+    ImagesModule,
     PhoneModule,
     FavoriteProductModule,
     ProductOrderModule,
@@ -35,6 +38,9 @@ import { TaxModule } from './modules/tax/tax.module';
     DiscountSpecificUserModule,
     AuthModule,
     TaxModule,
+    MulterModule.register({
+      dest: './uploads',
+    }),
   ],
   controllers: [],
   providers: [],

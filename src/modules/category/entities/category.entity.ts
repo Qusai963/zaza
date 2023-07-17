@@ -22,6 +22,9 @@ export class Category {
   @Column()
   textContentId: number;
 
+  @Column()
+  image: string;
+
   @ManyToOne(() => Category, (category) => category.categories, {
     onDelete: 'CASCADE',
   })

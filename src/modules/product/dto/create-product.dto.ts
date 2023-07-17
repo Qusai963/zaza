@@ -1,4 +1,11 @@
-import { IsNotEmpty, IsOptional, IsNumber, IsString, Min, Max } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsOptional,
+  IsNumber,
+  IsString,
+  Min,
+  Max,
+} from 'class-validator';
 
 export class CreateProductDto {
   @IsOptional()
@@ -13,7 +20,7 @@ export class CreateProductDto {
 
   @IsOptional()
   @IsString()
-  readonly picture: string;
+  readonly image: string;
 
   @IsOptional()
   @IsString()

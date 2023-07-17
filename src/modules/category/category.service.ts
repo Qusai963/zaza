@@ -1,19 +1,18 @@
 import { ProductService } from './../product/product.service';
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { IsNull, Repository, In } from 'typeorm';
+import { IsNull, Repository, Not, In } from 'typeorm';
 import { Category } from './entities/category.entity';
 import { TextContent } from '../text-content/entities/text-content.entity';
-import { Product } from '../product/entities/product.entity';
 
 @Injectable()
 export class CategoryService {
   constructor(
     @InjectRepository(Category)
     private readonly categoryRepository: Repository<Category>,
-    @InjectRepository(Product)
-    private readonly productRepository: Repository<Product>,
+    @InjectRepository(TextContent)
+    private readonly textContentRepository: Repository<TextContent>,
     private readonly productService: ProductService,
   ) {}
   create(parentCategoryId: number, textContent: TextContent) {
@@ -61,6 +60,9 @@ export class CategoryService {
   }
 
   async findAllChildren(id: number, limit: number, page: number, code: string) {
+    const category = await this.findOne(id);
+    if (!category) throw new NotFoundException();
+
     const hasCategories = await this.categoryRepository.findAndCount({
       where: {
         categoryId: id,
@@ -81,52 +83,84 @@ export class CategoryService {
         const translatedText = translation
           ? translation.translation
           : category.textContent.originalText;
-
         return {
           id: category.id,
           number: category.number,
           categoryId: category.categoryId,
           textContentId: category.textContentId,
-          translatedText: translatedText || category.textContent.originalText, // Use originalText if translatedText is empty
+          translatedText: translatedText || category.textContent.originalText,
         };
       });
 
       return {
         type: 'category',
+        category: {
+          ...category,
+          translatedText:
+            translatedCategories[0]?.translatedText ||
+            category.textContent.originalText,
+        },
         count: numberOfCategories,
         categories: translatedCategories,
       };
     }
 
-    const hasProducts = this.productService.findAllAndCountByCategoryId(
-      id,
-      limit,
-      page,
-    );
+    const { products, count: numberOfProducts } =
+      await this.productService.findAllAndCountByCategoryId(
+        id,
+        limit,
+        page,
+        code,
+      );
 
-    const numberOfProducts = hasProducts[1];
-
-    if (numberOfProducts > 0)
+    if (numberOfProducts > 0) {
       return {
         type: 'product',
+        category: {
+          ...category,
+          translatedText:
+            products[0]?.translatedText || category.textContent.originalText,
+        },
         count: numberOfProducts,
-        products: hasProducts[1],
+        products,
       };
+    }
 
-    return null;
+    // Retrieve the text content with translations
+    const textContent = await this.textContentRepository.findOne({
+      where: {
+        id: category.textContentId,
+      },
+      relations: ['translations'],
+    });
+
+    const translation = textContent.translations.find(
+      (translation) => translation.code === code,
+    );
+
+    const translatedText = translation
+      ? translation.translation
+      : textContent.originalText;
+
+    return {
+      ...category,
+      translatedText: translatedText || textContent.originalText,
+    };
   }
 
   findOne(id: number) {
     return this.categoryRepository.findOneBy({ id });
   }
 
-  async findAllWithProducts(code: string) {
-    const categoriesIds = await this.productRepository.find({
-      select: ['categoryId'],
-    });
+  async findAllThatAcceptAddition(code: string) {
+    const parentCategoriesIds = (
+      await this.categoryRepository.find({
+        select: ['categoryId'],
+      })
+    ).map((category) => category.categoryId);
 
     const categories = await this.categoryRepository.find({
-      where: { id: In(categoriesIds.map((product) => product.categoryId)) },
+      where: { id: Not(In(parentCategoriesIds)) },
       relations: ['textContent', 'textContent.translations'],
     });
 

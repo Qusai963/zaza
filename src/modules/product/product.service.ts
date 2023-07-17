@@ -29,12 +29,37 @@ export class ProductService {
     return `This action returns a #${id} product`;
   }
 
-  findAllAndCountByCategoryId(categoryId: number, limit: number, page: number) {
-    return this.productRepository.findAndCount({
+  async findAllAndCountByCategoryId(
+    categoryId: number,
+    limit: number,
+    page: number,
+    code: string,
+  ) {
+    const [products, totalCount] = await this.productRepository.findAndCount({
       where: { categoryId },
       take: limit,
       skip: (page - 1) * limit,
+      relations: ['textContent', 'textContent.translations'],
     });
+
+    const translatedProducts = products.map((product) => {
+      const translation = product.textContent.translations.find(
+        (translation) => translation.code === code,
+      );
+
+      const translatedText = translation
+        ? translation.translation
+        : product.textContent.originalText;
+
+      return {
+        id: product.id,
+        categoryId: product.categoryId,
+        textContentId: product.textContentId,
+        translatedText: translatedText || product.textContent.originalText,
+      };
+    });
+
+    return { products: translatedProducts, count: totalCount };
   }
 
   update(id: number, updateProductDto: UpdateProductDto) {

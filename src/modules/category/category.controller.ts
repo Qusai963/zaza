@@ -1,3 +1,4 @@
+import { FileInterceptor } from '@nestjs/platform-express';
 import {
   Controller,
   Get,
@@ -9,6 +10,12 @@ import {
   UseGuards,
   Inject,
   Query,
+  UseInterceptors,
+  UploadedFile,
+  ParseFilePipe,
+  MaxFileSizeValidator,
+  FileTypeValidator,
+  NotFoundException,
 } from '@nestjs/common';
 import { CategoryService } from './category.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
@@ -22,6 +29,12 @@ import { TextContentService } from '../text-content/text-content.service';
 import { DoesLanguageCodeForTextContentExistGuard } from '../language/guards/does-language-code-for-textContent-exist.guard';
 import { DoesLanguageCodeForTranslationExistGuard } from '../language/guards/does-language-code-for-translation-exist.guard';
 import { ParamRequired } from 'src/core/decorators/param-required.decorator';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Category } from './entities/category.entity';
+import { Repository } from 'typeorm';
+import { ImagesService } from '../images/images.service';
+import { CreateTextContentDto } from '../text-content/dto/create-text-content.dto';
+import { SecondCreateTranslationDto } from '../translation/dto/create-translation.dto';
 
 @Controller('category')
 export class CategoryController {
@@ -30,6 +43,9 @@ export class CategoryController {
     @Inject(REQUEST) private request: Request,
     private readonly textContentService: TextContentService,
     private readonly translationService: TranslationService,
+    private imageService: ImagesService,
+    @InjectRepository(Category)
+    private readonly categoryRepository: Repository<Category>,
   ) {}
 
   @UseGuards(
@@ -38,18 +54,24 @@ export class CategoryController {
     DoesLanguageCodeForTranslationExistGuard,
   )
   @Post()
-  async create(@Body() createCategoryDto: CreateCategoryDto) {
+  async create(
+    @Body() createCategoryDto: CreateCategoryDto,
+    @Body('textContent') createTextContentDto: CreateTextContentDto,
+    @Body('translation') createTranslationDtoList: SecondCreateTranslationDto[],
+  ) {
     try {
-      const { textContent, translation, ...category } = createCategoryDto;
-
       const createdTextContent = await this.textContentService.create(
-        textContent,
+        createTextContentDto,
       );
 
-      await this.translationService.createMany(translation, createdTextContent);
+      // TODO: apply validation on this array
+      await this.translationService.createMany(
+        createTranslationDtoList,
+        createdTextContent,
+      );
 
       return this.categoryService.create(
-        category.categoryId,
+        createCategoryDto.categoryId,
         createdTextContent,
       );
     } catch (error) {
@@ -63,12 +85,16 @@ export class CategoryController {
     @ParamRequired('page') page: string,
     @Query('language') language: string,
   ) {
-    return this.categoryService.findAllFathers(+limit, +page, language);
+    try {
+      return this.categoryService.findAllFathers(+limit, +page, language);
+    } catch (error) {
+      catchingError(error, this.request);
+    }
   }
 
-  @Get('findAllWithProducts')
-  findAllWithProducts(@Query('language') language: string) {
-    return this.categoryService.findAllWithProducts(language);
+  @Get('findAllThatAcceptAddition')
+  findAllThatAcceptAddition(@Query('language') language: string) {
+    return this.categoryService.findAllThatAcceptAddition(language);
   }
 
   @Get(':id')
@@ -92,5 +118,25 @@ export class CategoryController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.categoryService.remove(+id);
+  }
+  @Post('image')
+  @UseInterceptors(FileInterceptor('image'))
+  async createPartner(
+    @Body('categoryId') categoryId: number,
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          new MaxFileSizeValidator({ maxSize: 10000000 }),
+          new FileTypeValidator({ fileType: '.(png|jpeg|jpg)' }),
+        ],
+      }),
+    )
+    path: Express.Multer.File,
+  ) {
+    const category = await this.categoryService.findOne(categoryId);
+    if (!category) throw new NotFoundException();
+    category.image = this.imageService.create(path);
+
+    return this.categoryRepository.save(category);
   }
 }

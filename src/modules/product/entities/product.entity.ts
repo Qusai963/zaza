@@ -32,7 +32,7 @@ export class Product {
   quantity: number;
 
   @Column({ nullable: true })
-  picture: string;
+  image: string;
 
   @Column({ nullable: true })
   barcode: string;
