@@ -5,24 +5,22 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { UserService } from 'src/modules/user/user.service';
 import { Repository } from 'typeorm';
-import { Admin } from '../entities/admin.entity';
 
 @Injectable()
 export class IsAdminGuard implements CanActivate {
-  constructor(
-    @InjectRepository(Admin)
-    private readonly adminRepository: Repository<Admin>,
-  ) {}
+  constructor(private readonly userService: UserService) {}
   async canActivate(context: ExecutionContext) {
     const ctx = context.switchToHttp();
     const request = ctx.getRequest();
 
     const userId = +request.user.sub;
 
-    const isSuperAdmin = await this.adminRepository.findOneBy({ userId });
+    const user = await this.userService.findById(userId);
 
-    if (!isSuperAdmin) throw new ForbiddenException('you are not an admin.');
+    if (user.userName === 'admin')
+      throw new ForbiddenException('you are not an admin.');
 
     return true;
   }

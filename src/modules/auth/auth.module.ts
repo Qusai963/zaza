@@ -9,11 +9,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from '../user/entities/user.entity';
 import { LocalStrategy } from './strategies/local.strategy';
 import { Phone } from '../phone/entities/phone.entity';
-import { Admin } from '../admin/entities/admin.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, Phone, Admin]),
+    TypeOrmModule.forFeature([User, Phone]),
     PassportModule,
     UserModule,
     JwtModule.register({

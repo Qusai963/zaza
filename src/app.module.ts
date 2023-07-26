@@ -18,12 +18,18 @@ import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './modules/auth/auth.module';
 import { TaxModule } from './modules/tax/tax.module';
 import { ImagesModule } from './modules/images/images.module';
-import { AdminModule } from './modules/admin/admin.module';
 import { UnitModule } from './modules/unit/unit.module';
+import { User } from './modules/user/entities/user.entity';
+import { AuthService } from './modules/auth/auth.service';
+import { JwtService } from '@nestjs/jwt';
+import { LanguageService } from './modules/language/language.service';
+import { Language } from './modules/language/entities/language.entity';
+import { AppService } from './app.service';
 
 @Module({
   imports: [
     TypeOrmModule.forRoot(dataSourceOptions),
+    TypeOrmModule.forFeature([User, Language]),
     ConfigModule.forRoot({ isGlobal: true }),
     UserModule,
     LanguageModule,
@@ -43,10 +49,9 @@ import { UnitModule } from './modules/unit/unit.module';
     MulterModule.register({
       dest: './uploads',
     }),
-    AdminModule,
     UnitModule,
   ],
   controllers: [],
-  providers: [],
+  providers: [AuthService, JwtService, LanguageService, AppService],
 })
 export class AppModule {}

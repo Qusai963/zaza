@@ -1,4 +1,3 @@
-import { Admin } from 'src/modules/admin/entities/admin.entity';
 import { DiscountSpecificUser } from 'src/modules/discount-specific-user/entities/discount-specific-user.entity';
 import { FavoriteProduct } from 'src/modules/favorite-product/entities/favorite-product.entity';
 import { Order } from 'src/modules/order/entities/order.entity';
@@ -43,7 +42,4 @@ export class User {
 
   // @OneToMany(() => FavoriteProduct, (favoriteProducts) => favoriteProducts.user)
   // favoriteProducts: FavoriteProduct[];
-
-  @OneToOne(() => Admin, (admin) => admin)
-  admin: Admin;
 }

@@ -18,7 +18,7 @@ import { getUserId } from '../user/helper/get-user-id.helper';
 import { DoesUserExistGuard } from '../user/guards/does-user-exist.guard';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { catchingError } from 'src/core/error/helper/catching-error';
-import { IsAdminGuard } from '../admin/guards/is-admin.guard';
+import { IsAdminGuard } from './guards/is-admin.guard';
 
 @Controller('auth')
 export class AuthController {

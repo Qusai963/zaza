@@ -57,7 +57,7 @@ export class AuthService {
     return token;
   }
 
-  private async hashPassword(password: string) {
+  public async hashPassword(password: string) {
     const hash = await bcrypt.hash(password, 10);
     return hash;
   }

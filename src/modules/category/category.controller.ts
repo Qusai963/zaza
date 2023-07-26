@@ -35,8 +35,8 @@ import { Repository } from 'typeorm';
 import { ImagesService } from '../images/images.service';
 import { CreateTextContentDto } from '../text-content/dto/create-text-content.dto';
 import { SecondCreateTranslationDto } from '../translation/dto/create-translation.dto';
-import { IsAdminGuard } from '../admin/guards/is-admin.guard';
 import { AuthGuard } from '../auth/guards/auth.guard';
+import { IsAdminGuard } from '../auth/guards/is-admin.guard';
 
 @Controller('category')
 export class CategoryController {

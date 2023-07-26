@@ -1,5 +1,4 @@
 import { config } from 'dotenv';
-import { Admin } from 'src/modules/admin/entities/admin.entity';
 import { Category } from 'src/modules/category/entities/category.entity';
 import { Discount } from 'src/modules/discount/entities/discount.entity';
 import { Language } from 'src/modules/language/entities/language.entity';
@@ -32,8 +31,7 @@ export const dataSourceOptions: DataSourceOptions = {
     Discount,
     Product,
     Phone,
-    Admin,
-    Unit
+    Unit,
   ],
   synchronize: true,
   logging: false,
