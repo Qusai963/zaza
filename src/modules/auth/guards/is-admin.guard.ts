@@ -4,9 +4,7 @@ import {
   ExecutionContext,
   ForbiddenException,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
 import { UserService } from 'src/modules/user/user.service';
-import { Repository } from 'typeorm';
 
 @Injectable()
 export class IsAdminGuard implements CanActivate {
@@ -19,7 +17,7 @@ export class IsAdminGuard implements CanActivate {
 
     const user = await this.userService.findById(userId);
 
-    if (user.userName === 'admin')
+    if (user.userName !== 'admin')
       throw new ForbiddenException('you are not an admin.');
 
     return true;
