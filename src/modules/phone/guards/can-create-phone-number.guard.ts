@@ -2,16 +2,16 @@ import {
   Injectable,
   CanActivate,
   ExecutionContext,
-  BadRequestException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { Phone } from '../entities/phone.entity';
-import { PHONE_EXISTS } from 'src/core/error/messages/phone-exists.message';
 import { getLanguageFromRequest } from 'src/modules/language/helper/get-language-code.helper';
+import { FULL_PHONE_NUMBERS } from 'src/core/error/messages/full-phone-numbers.message';
 
 @Injectable()
-export class DoesPhoneNumberExistGuard implements CanActivate {
+export class CanCreatePhoneNumberGuard implements CanActivate {
   constructor(
     @InjectRepository(Phone)
     private readonly phoneRepository: Repository<Phone>,
@@ -21,20 +21,14 @@ export class DoesPhoneNumberExistGuard implements CanActivate {
     const request = ctx.getRequest();
 
     const language = getLanguageFromRequest(request);
-    const phones = request.body.phoneNumbers;
-    const number = phones.map((obj) => obj.number);
-    const code = phones.map((obj) => obj.code);
+    const userId = +request.user.sub;
+    let phoneDto = request.body.phoneNumbers;
+    phoneDto = phoneDto.length;
 
-    const isMatched = await this.phoneRepository.find({
-      where: { number: In(number), code: In(code) },
-      select: ['number', 'code'],
-    });
-    if (isMatched.length > 0)
-      throw new BadRequestException(
-        isMatched,
-        PHONE_EXISTS.getMessage(language),
-      );
+    const phoneNumbers = await this.phoneRepository.countBy({ userId });
 
+    if (phoneNumbers + phoneDto > 3)
+      throw new ForbiddenException(FULL_PHONE_NUMBERS.getMessage(language));
     return true;
   }
 }

@@ -3,6 +3,7 @@ import { Language } from 'src/modules/language/entities/language.entity';
 import { Product } from 'src/modules/product/entities/product.entity';
 import { Tax } from 'src/modules/tax/entities/tax.entity';
 import { Translation } from 'src/modules/translation/entities/translation.entity';
+import { Unit } from 'src/modules/unit/entities/unit.entity';
 import {
   PrimaryGeneratedColumn,
   Entity,
@@ -39,4 +40,7 @@ export class TextContent {
 
   @OneToMany(() => Tax, (tax) => tax.textContent)
   taxes: Tax[];
+
+  @OneToMany(() => Unit, (unit) => unit.textContent)
+  units: Unit[];
 }

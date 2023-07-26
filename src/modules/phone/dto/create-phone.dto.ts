@@ -2,5 +2,13 @@ import { IsNotEmpty } from 'class-validator';
 
 export class CreatePhoneDto {
   @IsNotEmpty()
-  phoneNumbers: string[];
+  number: string;
+
+  @IsNotEmpty()
+  code: string;
+}
+
+export class CreateMultiPhoneDto {
+  @IsNotEmpty()
+  phoneNumbers: CreatePhoneDto[];
 }

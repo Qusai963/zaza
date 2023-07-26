@@ -1,25 +1,25 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
-import { CreatePhoneDto } from './dto/create-phone.dto';
+import { Injectable } from '@nestjs/common';
+import { CreateMultiPhoneDto } from './dto/create-phone.dto';
 import { UpdatePhoneDto } from './dto/update-phone.dto';
-import { UserService } from '../user/user.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Phone } from './entities/phone.entity';
-import { In, Repository } from 'typeorm';
-import { PHONE_EXISTS } from 'src/core/error/messages/phone-exists.message';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class PhoneService {
   constructor(
-    private readonly userService: UserService,
     @InjectRepository(Phone)
     private readonly phoneRepository: Repository<Phone>,
   ) {}
-  async create(createPhoneDto: CreatePhoneDto, userId: number) {
-    const phones = createPhoneDto.phoneNumbers;
-    phones.map((number) => {
-      const phone = this.phoneRepository.create({ number, userId });
-      this.phoneRepository.save(phone);
-    });
+  async create(createMultiPhoneDto: CreateMultiPhoneDto, userId: number) {
+    const phones = createMultiPhoneDto.phoneNumbers;
+    for (let phone of phones) {
+      const createdPhone = this.phoneRepository.create({
+        ...phone,
+        userId,
+      });
+      await this.phoneRepository.save(createdPhone);
+    }
     return { phones };
   }
 

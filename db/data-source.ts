@@ -1,4 +1,5 @@
 import { config } from 'dotenv';
+import { Admin } from 'src/modules/admin/entities/admin.entity';
 import { Category } from 'src/modules/category/entities/category.entity';
 import { Discount } from 'src/modules/discount/entities/discount.entity';
 import { Language } from 'src/modules/language/entities/language.entity';
@@ -7,6 +8,7 @@ import { Product } from 'src/modules/product/entities/product.entity';
 import { Tax } from 'src/modules/tax/entities/tax.entity';
 import { TextContent } from 'src/modules/text-content/entities/text-content.entity';
 import { Translation } from 'src/modules/translation/entities/translation.entity';
+import { Unit } from 'src/modules/unit/entities/unit.entity';
 import { User } from 'src/modules/user/entities/user.entity';
 import { DataSource, DataSourceOptions } from 'typeorm';
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
@@ -30,6 +32,8 @@ export const dataSourceOptions: DataSourceOptions = {
     Discount,
     Product,
     Phone,
+    Admin,
+    Unit
   ],
   synchronize: true,
   logging: false,

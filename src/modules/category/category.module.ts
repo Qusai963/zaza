@@ -13,6 +13,8 @@ import { Language } from '../language/entities/language.entity';
 import { ProductService } from '../product/product.service';
 import { Product } from '../product/entities/product.entity';
 import { ImagesService } from '../images/images.service';
+import { Admin } from '../admin/entities/admin.entity';
+import { JwtService } from '@nestjs/jwt';
 
 @Module({
   imports: [
@@ -25,6 +27,7 @@ import { ImagesService } from '../images/images.service';
       Translation,
       Language,
       Product,
+      Admin
     ]),
   ],
   controllers: [CategoryController],
@@ -35,6 +38,7 @@ import { ImagesService } from '../images/images.service';
     LanguageService,
     ProductService,
     ImagesService,
+    JwtService
   ],
 })
 export class CategoryModule {}

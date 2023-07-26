@@ -18,6 +18,8 @@ import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './modules/auth/auth.module';
 import { TaxModule } from './modules/tax/tax.module';
 import { ImagesModule } from './modules/images/images.module';
+import { AdminModule } from './modules/admin/admin.module';
+import { UnitModule } from './modules/unit/unit.module';
 
 @Module({
   imports: [
@@ -41,6 +43,8 @@ import { ImagesModule } from './modules/images/images.module';
     MulterModule.register({
       dest: './uploads',
     }),
+    AdminModule,
+    UnitModule,
   ],
   controllers: [],
   providers: [],

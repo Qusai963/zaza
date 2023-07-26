@@ -1,9 +1,16 @@
+import { Admin } from 'src/modules/admin/entities/admin.entity';
 import { DiscountSpecificUser } from 'src/modules/discount-specific-user/entities/discount-specific-user.entity';
 import { FavoriteProduct } from 'src/modules/favorite-product/entities/favorite-product.entity';
 import { Order } from 'src/modules/order/entities/order.entity';
 import { Phone } from 'src/modules/phone/entities/phone.entity';
 import { Product } from 'src/modules/product/entities/product.entity';
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  OneToMany,
+  OneToOne,
+} from 'typeorm';
 
 @Entity('users')
 export class User {
@@ -36,4 +43,7 @@ export class User {
 
   // @OneToMany(() => FavoriteProduct, (favoriteProducts) => favoriteProducts.user)
   // favoriteProducts: FavoriteProduct[];
+
+  @OneToOne(() => Admin, (admin) => admin)
+  admin: Admin;
 }

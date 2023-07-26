@@ -40,15 +40,10 @@ export class AuthService {
 
   public async create(createUserDto: CreateUserDto) {
     const password = await this.hashPassword(createUserDto.password);
-
-    const user = await this.userService.create({
+    return this.userService.create({
       ...createUserDto,
       password,
     });
-
-    const accessToken = await this.generateToken(user);
-
-    return { accessToken, user };
   }
 
   public async profile(userId: number) {
