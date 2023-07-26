@@ -8,6 +8,7 @@ import {
   Delete,
   Inject,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { TaxService } from './tax.service';
 import { CreateTaxDto } from './dto/create-tax.dto';
@@ -22,6 +23,8 @@ import { DoesLanguageCodeForTextContentExistGuard } from '../language/guards/doe
 import { DoesTaxExistInParamGuard } from './guards/does-tax-exists-in-param.guard';
 import { CreateTextContentDto } from '../text-content/dto/create-text-content.dto';
 import { SecondCreateTranslationDto } from '../translation/dto/create-translation.dto';
+import { IsAdminGuard } from '../auth/guards/is-admin.guard';
+import { AuthGuard } from '../auth/guards/auth.guard';
 
 @Controller('tax')
 export class TaxController {
@@ -34,6 +37,8 @@ export class TaxController {
 
   @Post()
   @UseGuards(
+    AuthGuard,
+    IsAdminGuard,
     DoesLanguageCodeForTextContentExistGuard,
     DoesLanguageCodeForTranslationExistGuard,
   )
@@ -58,18 +63,19 @@ export class TaxController {
     }
   }
   @Get()
-  findAll() {
+  findAll(@Query('code') code: string) {
     try {
-      return this.taxService.findAll();
+      return this.taxService.findAll(code);
     } catch (error) {
       catchingError(error, this.request);
     }
   }
 
+  @UseGuards(DoesTaxExistInParamGuard)
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id') id: string, @Query('code') code: string) {
     try {
-      return this.taxService.findOne(+id);
+      return this.taxService.getOne(+id, code);
     } catch (error) {
       catchingError(error, this.request);
     }
@@ -85,7 +91,7 @@ export class TaxController {
     }
   }
 
-  @UseGuards(DoesTaxExistInParamGuard)
+  @UseGuards(DoesTaxExistInParamGuard, AuthGuard, IsAdminGuard)
   @Delete(':id')
   remove(@Param('id') id: string) {
     try {

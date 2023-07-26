@@ -18,12 +18,56 @@ export class TaxService {
     return this.taxRepository.save(tax);
   }
 
-  findAll() {
-    return this.taxRepository.find({ where: { isDeleted: false } });
+  async findAll(code: string) {
+    const taxes = await this.taxRepository.find({
+      where: { isDeleted: false },
+      relations: ['textContent', 'textContent.translations'],
+    });
+
+    const translatedTaxes = taxes.map((tax) => {
+      const translation = tax.textContent.translations.find(
+        (translation) => translation.code === code,
+      );
+
+      const translatedText = translation
+        ? translation.translation
+        : tax.textContent.originalText;
+
+      return {
+        id: tax.id,
+        percent: tax.percent,
+        textContentId: tax.textContentId,
+        translatedText: translatedText || tax.textContent.originalText,
+      };
+    });
+
+    return { taxes: translatedTaxes };
   }
 
   findOne(id: number) {
     return this.taxRepository.findOneBy({ id, isDeleted: false });
+  }
+
+  async getOne(id: number, code: string) {
+    const tax = await this.taxRepository.findOne({
+      where: { isDeleted: false, id },
+      relations: ['textContent', 'textContent.translations'],
+    });
+
+    const translation = tax.textContent.translations.find(
+      (translation) => translation.code === code,
+    );
+
+    const translatedText = translation
+      ? translation.translation
+      : tax.textContent.originalText;
+
+    return {
+      id: tax.id,
+      percent: tax.percent,
+      textContentId: tax.textContentId,
+      translatedText: translatedText || tax.textContent.originalText,
+    };
   }
 
   async update(id: number, updateTaxDto: UpdateTaxDto) {

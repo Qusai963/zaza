@@ -9,10 +9,13 @@ import { TranslationService } from '../translation/translation.service';
 import { TextContentService } from '../text-content/text-content.service';
 import { LanguageService } from '../language/language.service';
 import { Language } from '../language/entities/language.entity';
+import { UserService } from '../user/user.service';
+import { User } from '../user/entities/user.entity';
+import { JwtService } from '@nestjs/jwt';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Tax, TextContent, Translation, Language]),
+    TypeOrmModule.forFeature([Tax, TextContent, Translation, Language, User]),
   ],
   controllers: [TaxController],
   providers: [
@@ -20,6 +23,8 @@ import { Language } from '../language/entities/language.entity';
     TranslationService,
     TextContentService,
     LanguageService,
+    UserService,
+    JwtService,
   ],
 })
 export class TaxModule {}

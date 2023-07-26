@@ -18,9 +18,6 @@ export class Tax {
   percent: number;
 
   @Column()
-  name: string;
-
-  @Column()
   textContentId: number;
 
   @Column('tinyint', { default: 0, width: 1 })
