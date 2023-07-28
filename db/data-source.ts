@@ -1,4 +1,5 @@
 import { config } from 'dotenv';
+import { CategoryType } from 'src/modules/category/entities/category-type.entity';
 import { Category } from 'src/modules/category/entities/category.entity';
 import { Discount } from 'src/modules/discount/entities/discount.entity';
 import { Language } from 'src/modules/language/entities/language.entity';
@@ -34,6 +35,7 @@ export const dataSourceOptions: DataSourceOptions = {
     Phone,
     Unit,
     ProductUnit,
+    CategoryType,
   ],
   synchronize: true,
   logging: false,

@@ -4,15 +4,9 @@ import {
   IsNumber,
   IsString,
   Min,
-  Max,
 } from 'class-validator';
 
 export class CreateProductDto {
-  @IsOptional()
-  @IsNumber()
-  @Min(0)
-  readonly price: number;
-
   @IsOptional()
   @IsNumber()
   @Min(0)
@@ -28,7 +22,7 @@ export class CreateProductDto {
 
   @IsNotEmpty()
   @IsNumber()
-  readonly categoryId: number;
+  readonly parentCategoryId: number;
 
   @IsNotEmpty()
   @IsNumber()

@@ -20,7 +20,7 @@ import {
 import { CategoryService } from './category.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
-import { DoesCategoryExistGuard } from './guards/does-category-exists.guard';
+import { DoesParentCategorySafeForCategoriesGuard } from './guards/does-parent-category-safe-for-categories.guard';
 import { REQUEST } from '@nestjs/core';
 import { Request } from 'express';
 import { catchingError } from 'src/core/error/helper/catching-error';
@@ -37,6 +37,9 @@ import { CreateTextContentDto } from '../text-content/dto/create-text-content.dt
 import { SecondCreateTranslationDto } from '../translation/dto/create-translation.dto';
 import { AuthGuard } from '../auth/guards/auth.guard';
 import { IsAdminGuard } from '../auth/guards/is-admin.guard';
+import { DoesCategoryExistGuard } from './guards/does-category-exist.guard';
+import { UpdateTextContentDto } from '../text-content/dto/update-text-content.dto';
+import { UpdateSecondTranslationDtoList } from '../translation/dto/update-translation.dto';
 
 @Controller('category')
 export class CategoryController {
@@ -53,7 +56,7 @@ export class CategoryController {
   @UseGuards(
     AuthGuard,
     IsAdminGuard,
-    DoesCategoryExistGuard,
+    DoesParentCategorySafeForCategoriesGuard,
     DoesLanguageCodeForTextContentExistGuard,
     DoesLanguageCodeForTranslationExistGuard,
   )
@@ -75,7 +78,7 @@ export class CategoryController {
       );
 
       return this.categoryService.create(
-        createCategoryDto.categoryId,
+        createCategoryDto.parentCategoryId,
         createdTextContent,
       );
     } catch (error) {
@@ -83,6 +86,7 @@ export class CategoryController {
     }
   }
 
+  @UseGuards(AuthGuard)
   @Get()
   findAllFathers(
     @ParamRequired('limit') limit: string,
@@ -96,11 +100,17 @@ export class CategoryController {
     }
   }
 
-  @Get('findAllThatAcceptAddition')
-  findAllThatAcceptAddition(@Query('language') language: string) {
-    return this.categoryService.findAllThatAcceptAddition(language);
+  @UseGuards(AuthGuard, IsAdminGuard)
+  @Get('acceptProducts')
+  findAllThatAcceptProducts(@Query('language') language: string) {
+    try {
+      return this.categoryService.findAllThatAcceptProducts(language);
+    } catch (error) {
+      catchingError(error, this.request);
+    }
   }
 
+  @UseGuards(AuthGuard, DoesCategoryExistGuard)
   @Get(':id')
   findOne(
     @Param('id') id: string,
@@ -108,25 +118,59 @@ export class CategoryController {
     @ParamRequired('page') page: string,
     @Query('language') language: string,
   ) {
-    return this.categoryService.findAllChildren(+id, +limit, +page, language);
+    try {
+      return this.categoryService.findOneWithChildren(
+        +id,
+        +limit,
+        +page,
+        language,
+      );
+    } catch (error) {
+      catchingError(error, this.request);
+    }
   }
 
+  @UseGuards(AuthGuard, IsAdminGuard, DoesCategoryExistGuard)
   @Patch(':id')
-  update(
+  async update(
     @Param('id') id: string,
-    @Body() updateCategoryDto: UpdateCategoryDto,
+    @Body('textContent') updateTextContentDto: UpdateTextContentDto,
+    @Body('translation')
+    updateSecondTranslationDtoList: UpdateSecondTranslationDtoList[],
   ) {
-    return this.categoryService.update(+id, updateCategoryDto);
+    try {
+      const category = await this.categoryService.findOne(+id);
+      const textContentId = category.textContentId;
+      const updatedTextContent = await this.textContentService.update(
+        +textContentId,
+        updateTextContentDto,
+      );
+      const updatedTranslation = await this.translationService.update(
+        textContentId,
+        updateSecondTranslationDtoList,
+      );
+
+      return { category, updatedTextContent, updatedTranslation };
+    } catch (error) {
+      catchingError(error, this.request);
+    }
   }
 
+  @UseGuards(AuthGuard, IsAdminGuard, DoesCategoryExistGuard)
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.categoryService.remove(+id);
+    try {
+      return this.categoryService.remove(+id);
+    } catch (error) {
+      catchingError(error, this.request);
+    }
   }
+
+  @UseGuards(AuthGuard, IsAdminGuard)
   @Post('image')
   @UseInterceptors(FileInterceptor('image'))
   async createPartner(
-    @Body('categoryId') categoryId: number,
+    @Body('categoryId') categoryId: string,
     @UploadedFile(
       new ParseFilePipe({
         validators: [
@@ -137,10 +181,12 @@ export class CategoryController {
     )
     path: Express.Multer.File,
   ) {
-    const category = await this.categoryService.findOne(categoryId);
+    const category = await this.categoryService.findOne(+categoryId);
     if (!category) throw new NotFoundException();
     category.image = this.imageService.create(path);
 
-    return this.categoryRepository.save(category);
+    await this.categoryRepository.save(category);
+
+    return category;
   }
 }

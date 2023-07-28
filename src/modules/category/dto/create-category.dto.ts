@@ -1,6 +1,7 @@
-import { IsNumber, IsOptional } from 'class-validator';
+import { IsNumber, IsOptional, Min } from 'class-validator';
 export class CreateCategoryDto {
   @IsOptional()
   @IsNumber()
-  readonly categoryId: number;
+  @Min(1)
+  readonly parentCategoryId: number;
 }

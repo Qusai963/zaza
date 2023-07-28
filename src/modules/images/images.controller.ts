@@ -27,7 +27,7 @@ export class ImagesController {
   @Post()
   @UseInterceptors(FileInterceptor('image'))
   async createPartner(
-    @Body('categoryId') categoryId: number,
+    @Body('parentCategoryId') parentCategoryId: number,
     @UploadedFile(
       new ParseFilePipe({
         validators: [
@@ -39,7 +39,7 @@ export class ImagesController {
     path: Express.Multer.File,
   ) {
     const category = await this.categoryRepository.findOne({
-      where: { id: categoryId },
+      where: { id: parentCategoryId },
     });
     category.image = this.imageService.create(path);
 

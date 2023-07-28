@@ -26,11 +26,12 @@ import { LanguageService } from './modules/language/language.service';
 import { Language } from './modules/language/entities/language.entity';
 import { AppService } from './app.service';
 import { ProductUnitModule } from './modules/product-unit/product-unit.module';
+import { CategoryType } from './modules/category/entities/category-type.entity';
 
 @Module({
   imports: [
     TypeOrmModule.forRoot(dataSourceOptions),
-    TypeOrmModule.forFeature([User, Language]),
+    TypeOrmModule.forFeature([User, Language, CategoryType]),
     ConfigModule.forRoot({ isGlobal: true }),
     UserModule,
     LanguageModule,

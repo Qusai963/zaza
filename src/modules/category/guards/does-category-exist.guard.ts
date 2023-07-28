@@ -5,33 +5,29 @@ import {
   NotFoundException,
   Inject,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
 import { REQUEST } from '@nestjs/core';
 import { Request } from 'express';
-import { Category } from '../entities/category.entity';
-import { Repository } from 'typeorm';
-import { CATEGORY_DOES_NOT_EXISTS } from 'src/core/error/messages/category-doesnot-exists.message';
+import { CATEGORY_NOT_FOUND } from 'src/core/error/messages/category-not-found.message';
 import { getLanguageFromRequest } from 'src/modules/language/helper/get-language-code.helper';
+import { CategoryService } from '../category.service';
 
 @Injectable()
 export class DoesCategoryExistGuard implements CanActivate {
   constructor(
-    @InjectRepository(Category)
-    private readonly categoryRepository: Repository<Category>,
+    private readonly categoryService: CategoryService,
     @Inject(REQUEST) private request: Request,
   ) {}
   async canActivate(context: ExecutionContext) {
     const ctx = context.switchToHttp();
     const request = ctx.getRequest();
-    const categoryId = request.body.categoryId;
+    const id = request.params.id;
     const language = getLanguageFromRequest(this.request);
 
-    if (
-      !categoryId ||
-      (await this.categoryRepository.findOneBy({ id: categoryId }))
-    )
-      return true;
+    const category = await this.categoryService.findOne(+id);
 
-    throw new NotFoundException(CATEGORY_DOES_NOT_EXISTS.getMessage(language));
+    if (!category)
+      throw new NotFoundException(CATEGORY_NOT_FOUND.getMessage(language));
+
+    return true;
   }
 }

@@ -49,22 +49,23 @@ export class TranslationService {
   ) {
     const translation = await this.findByTextContentId(id);
 
-    for (const updateTranslation of updateSecondTranslationDtoList) {
-      const { code, translation: updatedTranslation } = updateTranslation;
+    if (translation.length > 0)
+      for (const updateTranslation of updateSecondTranslationDtoList) {
+        const { code, translation: updatedTranslation } = updateTranslation;
 
-      const existingTranslation = translation.find((t) => t.code === code);
+        const existingTranslation = translation.find((t) => t.code === code);
 
-      if (existingTranslation) {
-        existingTranslation.translation = updatedTranslation;
-      } else {
-        const newTranslation = this.translationRepository.create({
-          code,
-          textContentId: id,
-          translation: updatedTranslation,
-        });
-        translation.push(newTranslation);
+        if (existingTranslation) {
+          existingTranslation.translation = updatedTranslation;
+        } else {
+          const newTranslation = this.translationRepository.create({
+            code,
+            textContentId: id,
+            translation: updatedTranslation,
+          });
+          translation.push(newTranslation);
+        }
       }
-    }
 
     return this.translationRepository.save(translation);
   }

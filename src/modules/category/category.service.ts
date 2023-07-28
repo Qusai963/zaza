@@ -5,19 +5,23 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Repository, Not, In } from 'typeorm';
 import { Category } from './entities/category.entity';
 import { TextContent } from '../text-content/entities/text-content.entity';
+import { CategoryTypeEnum } from './constants/category-enum';
+import { Product } from '../product/entities/product.entity';
 
 @Injectable()
 export class CategoryService {
   constructor(
     @InjectRepository(Category)
     private readonly categoryRepository: Repository<Category>,
+    @InjectRepository(Product)
+    private readonly productRepository: Repository<Product>,
     @InjectRepository(TextContent)
     private readonly textContentRepository: Repository<TextContent>,
     private readonly productService: ProductService,
   ) {}
   create(parentCategoryId: number, textContent: TextContent) {
     const category = this.categoryRepository.create({
-      categoryId: parentCategoryId,
+      parentCategoryId: parentCategoryId,
     });
 
     category.textContent = textContent;
@@ -28,7 +32,7 @@ export class CategoryService {
   async findAllFathers(limit: number, page: number, code: string) {
     const categories = await this.categoryRepository.findAndCount({
       where: {
-        categoryId: IsNull(),
+        parentCategoryId: IsNull(),
       },
       take: limit,
       skip: (page - 1) * limit,
@@ -46,10 +50,11 @@ export class CategoryService {
 
       return {
         id: category.id,
-        number: category.number,
-        categoryId: category.categoryId,
+        type: category.typeName,
+        productsNumber: category.productsNumber,
+        parentCategoryId: category.parentCategoryId,
         textContentId: category.textContentId,
-        translatedText: translatedText || category.textContent.originalText, // Use originalText if translatedText is empty
+        translatedText: translatedText || category.textContent.originalText,
       };
     });
 
@@ -59,13 +64,18 @@ export class CategoryService {
     };
   }
 
-  async findAllChildren(id: number, limit: number, page: number, code: string) {
+  async findOneWithChildren(
+    id: number,
+    limit: number,
+    page: number,
+    code: string,
+  ) {
     const category = await this.findOne(id);
     if (!category) throw new NotFoundException();
 
     const hasCategories = await this.categoryRepository.findAndCount({
       where: {
-        categoryId: id,
+        parentCategoryId: id,
       },
       take: limit,
       skip: (page - 1) * limit,
@@ -85,21 +95,21 @@ export class CategoryService {
           : category.textContent.originalText;
         return {
           id: category.id,
-          number: category.number,
-          categoryId: category.categoryId,
+          productsNumber: category.productsNumber,
+          type: category.typeName,
+          parentCategoryId: category.parentCategoryId,
+          image: category.image,
           textContentId: category.textContentId,
           translatedText: translatedText || category.textContent.originalText,
         };
       });
 
       return {
-        type: 'category',
-        category: {
-          ...category,
-          translatedText:
-            translatedCategories[0]?.translatedText ||
-            category.textContent.originalText,
-        },
+        ...category,
+        translatedText:
+          translatedCategories[0]?.translatedText ||
+          category.textContent.originalText,
+
         count: numberOfCategories,
         categories: translatedCategories,
       };
@@ -115,12 +125,12 @@ export class CategoryService {
 
     if (numberOfProducts > 0) {
       return {
-        type: 'product',
-        category: {
-          ...category,
-          translatedText:
-            products[0]?.translatedText || category.textContent.originalText,
-        },
+        type: category.typeName,
+
+        ...category,
+        translatedText:
+          products[0]?.translatedText || category.textContent.originalText,
+
         count: numberOfProducts,
         products,
       };
@@ -149,18 +159,14 @@ export class CategoryService {
   }
 
   findOne(id: number) {
-    return this.categoryRepository.findOneBy({ id });
+    return this.categoryRepository.findOneBy({ id, isDeleted: false });
   }
 
-  async findAllThatAcceptAddition(code: string) {
-    const parentCategoriesIds = (
-      await this.categoryRepository.find({
-        select: ['categoryId'],
-      })
-    ).map((category) => category.categoryId);
-
+  async findAllThatAcceptProducts(code: string) {
     const categories = await this.categoryRepository.find({
-      where: { id: Not(In(parentCategoriesIds)) },
+      where: {
+        typeName: In([CategoryTypeEnum.UNKNOWN, CategoryTypeEnum.LEAF]),
+      },
       relations: ['textContent', 'textContent.translations'],
     });
 
@@ -175,23 +181,57 @@ export class CategoryService {
 
       return {
         id: category.id,
-        number: category.number,
-        categoryId: category.categoryId,
+        type: category.typeName,
+        productsNumber: category.productsNumber,
+        parentCategoryId: category.parentCategoryId,
         textContentId: category.textContentId,
-        translatedText: translatedText || category.textContent.originalText, // Use originalText if translatedText is empty
+        translatedText: translatedText || category.textContent.originalText,
       };
     });
 
     return translatedCategories;
   }
 
-  update(id: number, updateCategoryDto: UpdateCategoryDto) {
-    return `This action updates a #${id} category`;
-  }
-
   async remove(id: number) {
-    const category = await this.findOne(id);
-
-    if (category) return this.categoryRepository.remove(category);
+    const queue = []; // Use queue for BFS
+    const deletedCategories: number[] = []; // Keep track of deleted category IDs
+  
+    // Start with the given category ID
+    queue.push(
+      await this.categoryRepository.findOne({
+        where: { id, isDeleted: false },
+      }),
+    );
+  
+    while (queue.length > 0) {
+      const currentCategory = queue.shift();
+  
+      if (!currentCategory || deletedCategories.includes(currentCategory.id)) {
+        continue;
+      }
+  
+      // Soft delete the category
+      currentCategory.isDeleted = true;
+      await this.categoryRepository.save(currentCategory);
+  
+      // Add its children (sub-categories and products) to the queue
+      const children = await this.categoryRepository.find({
+        where: { parentCategoryId: currentCategory.id, isDeleted: false },
+      });
+      children.forEach((child) => queue.push(child));
+  
+      // Soft delete products associated with the current category
+      const products = await this.productRepository.find({
+        where: { parentCategoryId: currentCategory.id, isDeleted: 0 },
+      });
+      for (const product of products) {
+        product.isDeleted = 1;
+        await this.productRepository.save(product);
+      }
+  
+      // Track deleted category IDs to avoid processing them again
+      deletedCategories.push(currentCategory.id);
+    }
   }
+  
 }

@@ -6,7 +6,10 @@ import {
   ManyToOne,
   Column,
   OneToMany,
+  JoinColumn,
 } from 'typeorm';
+import { CategoryType } from './category-type.entity';
+import { CategoryTypeEnum } from '../constants/category-enum';
 
 @Entity()
 export class Category {
@@ -14,10 +17,10 @@ export class Category {
   id: number;
 
   @Column({ default: 0 })
-  number: number;
+  productsNumber: number;
 
   @Column({ default: null })
-  categoryId: number;
+  parentCategoryId: number;
 
   @Column()
   textContentId: number;
@@ -25,14 +28,17 @@ export class Category {
   @Column()
   image: string;
 
-  @ManyToOne(() => Category, (category) => category.categories, {
-    onDelete: 'CASCADE',
-  })
+  @Column({ default: false })
+  isDeleted: boolean;
+
+  @Column({ default: CategoryTypeEnum.UNKNOWN })
+  typeName: string;
+
+  @ManyToOne(() => Category, (category) => category.categories)
+  @JoinColumn({ name: 'parent_category_id' })
   category: Category;
 
-  @ManyToOne(() => TextContent, (textContent) => textContent.categories, {
-    onDelete: 'CASCADE',
-  })
+  @ManyToOne(() => TextContent, (textContent) => textContent.categories)
   textContent: TextContent;
 
   @OneToMany(() => Product, (product) => product.category)
@@ -40,4 +46,8 @@ export class Category {
 
   @OneToMany(() => Category, (category) => category.category)
   categories: Category[];
+
+  @ManyToOne(() => CategoryType, (categoryType) => categoryType.categories)
+  @JoinColumn({ name: 'type_name' })
+  type: CategoryType;
 }

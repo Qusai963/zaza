@@ -24,7 +24,7 @@ export class Product {
   id: number;
 
   @Column()
-  categoryId: number;
+  parentCategoryId: number;
 
   @Column('double', { nullable: true })
   price: number;
@@ -51,14 +51,12 @@ export class Product {
   textContentId: number;
 
   @Column()
-  userId: number;
-
-  @Column()
   taxId: number;
 
   @ManyToOne(() => Category, (category) => category.products, {
     onDelete: 'CASCADE',
   })
+  @JoinColumn({ name: 'parent_category_id' })
   category: Category;
 
   @ManyToOne(() => TextContent, (textContent) => textContent.products, {

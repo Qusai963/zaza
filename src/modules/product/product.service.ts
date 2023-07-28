@@ -30,13 +30,13 @@ export class ProductService {
   }
 
   async findAllAndCountByCategoryId(
-    categoryId: number,
+    parentCategoryId: number,
     limit: number,
     page: number,
     code: string,
   ) {
     const [products, totalCount] = await this.productRepository.findAndCount({
-      where: { categoryId },
+      where: { parentCategoryId },
       take: limit,
       skip: (page - 1) * limit,
       relations: ['textContent', 'textContent.translations'],
@@ -53,7 +53,7 @@ export class ProductService {
 
       return {
         id: product.id,
-        categoryId: product.categoryId,
+        parentCategoryId: product.parentCategoryId,
         textContentId: product.textContentId,
         translatedText: translatedText || product.textContent.originalText,
       };
