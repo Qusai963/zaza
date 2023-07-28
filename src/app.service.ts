@@ -21,11 +21,12 @@ export class AppService {
       });
 
     const en = await this.languageService.findByCode('en');
-    const de = await this.languageService.findByCode('de');
-    const ar = await this.languageService.findByCode('ar');
-
     if (!en) this.languageService.create({ code: 'en', name: 'English' });
+
+    const de = await this.languageService.findByCode('de');
     if (!de) this.languageService.create({ code: 'de', name: 'German' });
+
+    const ar = await this.languageService.findByCode('ar');
     if (!ar) this.languageService.create({ code: 'ar', name: 'Arabic' });
   }
 }

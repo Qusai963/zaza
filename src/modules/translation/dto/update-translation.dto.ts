@@ -3,4 +3,4 @@ import { CreateTranslationDto, SecondCreateTranslationDto } from './create-trans
 
 export class UpdateTranslationDto extends PartialType(CreateTranslationDto) {}
 
-export class UpdateTranslationDtoList extends PartialType(SecondCreateTranslationDto) {}
+export class UpdateSecondTranslationDtoList extends PartialType(SecondCreateTranslationDto) {}

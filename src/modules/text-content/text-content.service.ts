@@ -22,11 +22,15 @@ export class TextContentService {
   }
 
   findOne(id: number) {
-    return `This action returns a #${id} textContent`;
+    return this.textContentRepository.findOneBy({ id });
   }
 
-  update(id: number, updateTextContentDto: UpdateTextContentDto) {
-    return `This action updates a #${id} textContent`;
+  async update(id: number, updateTextContentDto: UpdateTextContentDto) {
+    const textContent = await this.findOne(id);
+    return this.textContentRepository.save({
+      ...textContent,
+      ...updateTextContentDto,
+    });
   }
 
   remove(id: number) {

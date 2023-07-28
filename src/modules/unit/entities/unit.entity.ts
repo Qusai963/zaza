@@ -1,7 +1,10 @@
+import { ProductUnit } from 'src/modules/product-unit/entities/product-unit.entity';
 import { TextContent } from 'src/modules/text-content/entities/text-content.entity';
 import {
+  Column,
   Entity,
   ManyToOne,
+  OneToMany,
   PrimaryColumn,
   PrimaryGeneratedColumn,
 } from 'typeorm';
@@ -11,11 +14,17 @@ export class Unit {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @PrimaryColumn()
+  @Column()
   textContentId: number;
+
+  @Column('tinyint', { default: false })
+  isDeleted: boolean;
 
   @ManyToOne(() => TextContent, (textContent) => textContent.units, {
     onDelete: 'CASCADE',
   })
   textContent: TextContent;
+
+  @OneToMany(() => ProductUnit, (productUnit) => productUnit.unit)
+  productUnits: ProductUnit[];
 }

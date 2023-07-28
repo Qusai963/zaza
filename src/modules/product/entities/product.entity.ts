@@ -3,6 +3,7 @@ import { DiscountSpecificUser } from 'src/modules/discount-specific-user/entitie
 import { Discount } from 'src/modules/discount/entities/discount.entity';
 import { FavoriteProduct } from 'src/modules/favorite-product/entities/favorite-product.entity';
 import { ProductOrder } from 'src/modules/product-order/entities/product-order.entity';
+import { ProductUnit } from 'src/modules/product-unit/entities/product-unit.entity';
 import { Tax } from 'src/modules/tax/entities/tax.entity';
 import { TextContent } from 'src/modules/text-content/entities/text-content.entity';
 import { User } from 'src/modules/user/entities/user.entity';
@@ -86,4 +87,7 @@ export class Product {
   //   (discountSpecificUser) => discountSpecificUser.product,
   // )
   // discountSpecificUsers: DiscountSpecificUser[];
+
+  @OneToMany(() => ProductUnit, (productUnit) => productUnit.product)
+  productUnits: ProductUnit[];
 }

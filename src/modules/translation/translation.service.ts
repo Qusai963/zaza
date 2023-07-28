@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { CreateTranslationDto } from './dto/create-translation.dto';
-import { UpdateTranslationDto } from './dto/update-translation.dto';
+import {
+  UpdateSecondTranslationDtoList,
+  UpdateTranslationDto,
+} from './dto/update-translation.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Translation } from './entities/translation.entity';
 import { Repository } from 'typeorm';
@@ -36,14 +39,35 @@ export class TranslationService {
     return createdTranslations;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} translation`;
+  findByTextContentId(id: number) {
+    return this.translationRepository.findBy({ textContentId: id });
   }
 
-  update(id: number, updateTranslationDto: UpdateTranslationDto) {
-    return `This action updates a #${id} translation`;
-  }
+  async update(
+    id: number,
+    updateSecondTranslationDtoList: UpdateSecondTranslationDtoList[],
+  ) {
+    const translation = await this.findByTextContentId(id);
 
+    for (const updateTranslation of updateSecondTranslationDtoList) {
+      const { code, translation: updatedTranslation } = updateTranslation;
+
+      const existingTranslation = translation.find((t) => t.code === code);
+
+      if (existingTranslation) {
+        existingTranslation.translation = updatedTranslation;
+      } else {
+        const newTranslation = this.translationRepository.create({
+          code,
+          textContentId: id,
+          translation: updatedTranslation,
+        });
+        translation.push(newTranslation);
+      }
+    }
+
+    return this.translationRepository.save(translation);
+  }
   remove(id: number) {
     return `This action removes a #${id} translation`;
   }

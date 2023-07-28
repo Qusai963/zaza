@@ -12,7 +12,10 @@ import {
 } from '@nestjs/common';
 import { TranslationService } from './translation.service';
 import { CreateTranslationDto } from './dto/create-translation.dto';
-import { UpdateTranslationDto } from './dto/update-translation.dto';
+import {
+  UpdateSecondTranslationDtoList,
+  UpdateTranslationDto,
+} from './dto/update-translation.dto';
 import { DoesTextContentExistGuard } from '../text-content/guards/text-content-exists.guard';
 import { DoesLanguageCodeExistGuard } from '../language/guards/does-language-code-exist.guard';
 import { catchingError } from 'src/core/error/helper/catching-error';
@@ -35,17 +38,21 @@ export class TranslationController {
     }
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.translationService.findOne(+id);
+  @Get(':textContentId')
+  findOne(@Param('textContentId') textContentId: string) {
+    return this.translationService.findByTextContentId(+textContentId);
   }
 
-  @Patch(':id')
+  @Patch(':textContentId')
   update(
-    @Param('id') id: string,
-    @Body() updateTranslationDto: UpdateTranslationDto,
+    @Param('textContentId') textContentId: string,
+    @Body('translation')
+    updateSecondTranslationDtoList: UpdateSecondTranslationDtoList[],
   ) {
-    return this.translationService.update(+id, updateTranslationDto);
+    return this.translationService.update(
+      +textContentId,
+      updateSecondTranslationDtoList,
+    );
   }
 
   @Delete(':id')

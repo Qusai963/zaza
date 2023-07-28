@@ -25,6 +25,7 @@ import { JwtService } from '@nestjs/jwt';
 import { LanguageService } from './modules/language/language.service';
 import { Language } from './modules/language/entities/language.entity';
 import { AppService } from './app.service';
+import { ProductUnitModule } from './modules/product-unit/product-unit.module';
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import { AppService } from './app.service';
       dest: './uploads',
     }),
     UnitModule,
+    ProductUnitModule,
   ],
   controllers: [],
   providers: [AuthService, JwtService, LanguageService, AppService],

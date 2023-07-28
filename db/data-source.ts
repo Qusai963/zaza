@@ -3,6 +3,7 @@ import { Category } from 'src/modules/category/entities/category.entity';
 import { Discount } from 'src/modules/discount/entities/discount.entity';
 import { Language } from 'src/modules/language/entities/language.entity';
 import { Phone } from 'src/modules/phone/entities/phone.entity';
+import { ProductUnit } from 'src/modules/product-unit/entities/product-unit.entity';
 import { Product } from 'src/modules/product/entities/product.entity';
 import { Tax } from 'src/modules/tax/entities/tax.entity';
 import { TextContent } from 'src/modules/text-content/entities/text-content.entity';
@@ -32,6 +33,7 @@ export const dataSourceOptions: DataSourceOptions = {
     Product,
     Phone,
     Unit,
+    ProductUnit,
   ],
   synchronize: true,
   logging: false,

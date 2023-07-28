@@ -1,5 +1,6 @@
 import { Category } from 'src/modules/category/entities/category.entity';
 import { Language } from 'src/modules/language/entities/language.entity';
+import { ProductUnit } from 'src/modules/product-unit/entities/product-unit.entity';
 import { Product } from 'src/modules/product/entities/product.entity';
 import { Tax } from 'src/modules/tax/entities/tax.entity';
 import { Translation } from 'src/modules/translation/entities/translation.entity';
@@ -43,4 +44,7 @@ export class TextContent {
 
   @OneToMany(() => Unit, (unit) => unit.textContent)
   units: Unit[];
+
+  @OneToMany(() => ProductUnit, (productUnit) => productUnit.textContent)
+  productUnits: ProductUnit[];
 }
