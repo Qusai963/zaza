@@ -25,6 +25,8 @@ import { CreateTextContentDto } from '../text-content/dto/create-text-content.dt
 import { SecondCreateTranslationDto } from '../translation/dto/create-translation.dto';
 import { IsAdminGuard } from '../auth/guards/is-admin.guard';
 import { AuthGuard } from '../auth/guards/auth.guard';
+import { UpdateTextContentDto } from '../text-content/dto/update-text-content.dto';
+import { UpdateSecondTranslationDtoList } from '../translation/dto/update-translation.dto';
 
 @Controller('tax')
 export class TaxController {
@@ -62,6 +64,8 @@ export class TaxController {
       catchingError(error, this.request);
     }
   }
+
+  @UseGuards(AuthGuard, IsAdminGuard)
   @Get()
   findAll(@Query('code') code: string) {
     try {
@@ -71,7 +75,7 @@ export class TaxController {
     }
   }
 
-  @UseGuards(DoesTaxExistInParamGuard)
+  @UseGuards(AuthGuard, IsAdminGuard, DoesTaxExistInParamGuard)
   @Get(':id')
   findOne(@Param('id') id: string, @Query('code') code: string) {
     try {
@@ -81,10 +85,27 @@ export class TaxController {
     }
   }
 
-  @UseGuards(DoesTaxExistInParamGuard)
+  @UseGuards(AuthGuard, IsAdminGuard, DoesTaxExistInParamGuard)
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateTaxDto: UpdateTaxDto) {
+  async update(
+    @Param('id') id: string,
+    @Body() updateTaxDto: UpdateTaxDto,
+    @Body('textContent') updateTextContentDto: UpdateTextContentDto,
+    @Body('translation')
+    updateSecondTranslationDtoList: UpdateSecondTranslationDtoList[],
+  ) {
     try {
+      const tax = await this.taxService.findOne(+id);
+      const textContentId = tax.textContentId;
+      const updatedTextContent = await this.textContentService.update(
+        +textContentId,
+        updateTextContentDto,
+      );
+
+      const updatedTranslation = await this.translationService.update(
+        textContentId,
+        updateSecondTranslationDtoList,
+      );
       return this.taxService.update(+id, updateTaxDto);
     } catch (error) {
       catchingError(error, this.request);

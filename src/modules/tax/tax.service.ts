@@ -72,12 +72,13 @@ export class TaxService {
 
   async update(id: number, updateTaxDto: UpdateTaxDto) {
     const tax = await this.findOne(id);
-
-    Object.assign(tax, updateTaxDto);
-
-    const newTax = this.taxRepository.create(tax);
-
     tax.isDeleted = true;
+    await this.taxRepository.save(tax);
+
+    const newTax = this.taxRepository.create({
+      percent: updateTaxDto.percent,
+      textContentId: tax.textContentId,
+    });
 
     return this.taxRepository.save(newTax);
   }
