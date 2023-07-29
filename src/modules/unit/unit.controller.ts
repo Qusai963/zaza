@@ -11,8 +11,6 @@ import {
   Query,
 } from '@nestjs/common';
 import { UnitService } from './unit.service';
-import { CreateUnitDto } from './dto/create-unit.dto';
-import { UpdateUnitDto } from './dto/update-unit.dto';
 import { AuthGuard } from '../auth/guards/auth.guard';
 import { IsAdminGuard } from '../auth/guards/is-admin.guard';
 import { catchingError } from 'src/core/error/helper/catching-error';
@@ -27,7 +25,9 @@ import { DoesLanguageCodeForTextContentExistGuard } from '../language/guards/doe
 import { UpdateTextContentDto } from '../text-content/dto/update-text-content.dto';
 import { UpdateSecondTranslationDtoList } from '../translation/dto/update-translation.dto';
 import { DoesUnitExistGuard } from './guards/does-unit-exist.guard';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('unit')
 @Controller('unit')
 export class UnitController {
   constructor(

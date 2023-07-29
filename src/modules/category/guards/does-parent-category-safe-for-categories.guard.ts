@@ -13,12 +13,14 @@ import { Repository } from 'typeorm';
 import { CATEGORY_NOT_FOUND } from 'src/core/error/messages/category-not-found.message';
 import { getLanguageFromRequest } from 'src/modules/language/helper/get-language-code.helper';
 import { CategoryTypeEnum } from '../constants/category-enum';
+import { CategoryService } from '../category.service';
 
 @Injectable()
 export class DoesParentCategorySafeForCategoriesGuard implements CanActivate {
   constructor(
     @InjectRepository(Category)
     private readonly categoryRepository: Repository<Category>,
+    private readonly categoryService: CategoryService,
     @Inject(REQUEST) private request: Request,
   ) {}
   async canActivate(context: ExecutionContext) {
@@ -29,9 +31,7 @@ export class DoesParentCategorySafeForCategoriesGuard implements CanActivate {
 
     if (!parentCategoryId) return true;
 
-    const parentCategory = await this.categoryRepository.findOneBy({
-      id: parentCategoryId,
-    });
+    const parentCategory = await this.categoryService.findOne(+parentCategoryId);
 
     if (!parentCategory)
       throw new NotFoundException(CATEGORY_NOT_FOUND.getMessage(language));

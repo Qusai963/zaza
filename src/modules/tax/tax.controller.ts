@@ -27,7 +27,9 @@ import { IsAdminGuard } from '../auth/guards/is-admin.guard';
 import { AuthGuard } from '../auth/guards/auth.guard';
 import { UpdateTextContentDto } from '../text-content/dto/update-text-content.dto';
 import { UpdateSecondTranslationDtoList } from '../translation/dto/update-translation.dto';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('tax')
 @Controller('tax')
 export class TaxController {
   constructor(

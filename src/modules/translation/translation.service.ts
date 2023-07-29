@@ -1,9 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { CreateTranslationDto } from './dto/create-translation.dto';
-import {
-  UpdateSecondTranslationDtoList,
-  UpdateTranslationDto,
-} from './dto/update-translation.dto';
+import { UpdateSecondTranslationDtoList } from './dto/update-translation.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Translation } from './entities/translation.entity';
 import { Repository } from 'typeorm';
@@ -68,8 +65,5 @@ export class TranslationService {
       }
 
     return this.translationRepository.save(translation);
-  }
-  remove(id: number) {
-    return `This action removes a #${id} translation`;
   }
 }

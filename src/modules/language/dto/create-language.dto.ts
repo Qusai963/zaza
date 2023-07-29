@@ -1,11 +1,13 @@
-import { IsNotEmpty, Length } from 'class-validator';
+import { IsNotEmpty, IsString, Length } from 'class-validator';
 
 export class CreateLanguageDto {
   @IsNotEmpty()
+  @IsString()
   @Length(2, 5)
   code: string;
 
   @IsNotEmpty()
-  @Length(2, 45)
+  @IsString()
+  @Length(2, 5)
   name: string;
 }

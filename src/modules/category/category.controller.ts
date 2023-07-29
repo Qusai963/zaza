@@ -19,7 +19,6 @@ import {
 } from '@nestjs/common';
 import { CategoryService } from './category.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
-import { UpdateCategoryDto } from './dto/update-category.dto';
 import { DoesParentCategorySafeForCategoriesGuard } from './guards/does-parent-category-safe-for-categories.guard';
 import { REQUEST } from '@nestjs/core';
 import { Request } from 'express';
@@ -40,7 +39,9 @@ import { IsAdminGuard } from '../auth/guards/is-admin.guard';
 import { DoesCategoryExistGuard } from './guards/does-category-exist.guard';
 import { UpdateTextContentDto } from '../text-content/dto/update-text-content.dto';
 import { UpdateSecondTranslationDtoList } from '../translation/dto/update-translation.dto';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('category')
 @Controller('category')
 export class CategoryController {
   constructor(
@@ -169,7 +170,7 @@ export class CategoryController {
   @UseGuards(AuthGuard, IsAdminGuard)
   @Post('image')
   @UseInterceptors(FileInterceptor('image'))
-  async createPartner(
+  async createImage(
     @Body('categoryId') categoryId: string,
     @UploadedFile(
       new ParseFilePipe({

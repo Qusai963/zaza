@@ -9,12 +9,17 @@ import {
 export class CreateProductDto {
   @IsOptional()
   @IsNumber()
-  @Min(0)
-  readonly quantity: number;
+  @Min(1)
+  readonly quantityInStock: number;
 
   @IsOptional()
   @IsString()
   readonly image: string;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  readonly price: number;
 
   @IsOptional()
   @IsString()
@@ -22,9 +27,11 @@ export class CreateProductDto {
 
   @IsNotEmpty()
   @IsNumber()
+  @Min(1)
   readonly parentCategoryId: number;
 
   @IsNotEmpty()
   @IsNumber()
+  @Min(1)
   readonly taxId: number;
 }

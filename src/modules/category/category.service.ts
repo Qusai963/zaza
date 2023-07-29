@@ -1,6 +1,5 @@
 import { ProductService } from './../product/product.service';
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { UpdateCategoryDto } from './dto/update-category.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Repository, Not, In } from 'typeorm';
 import { Category } from './entities/category.entity';
@@ -195,31 +194,31 @@ export class CategoryService {
   async remove(id: number) {
     const queue = []; // Use queue for BFS
     const deletedCategories: number[] = []; // Keep track of deleted category IDs
-  
+
     // Start with the given category ID
     queue.push(
       await this.categoryRepository.findOne({
         where: { id, isDeleted: false },
       }),
     );
-  
+
     while (queue.length > 0) {
       const currentCategory = queue.shift();
-  
+
       if (!currentCategory || deletedCategories.includes(currentCategory.id)) {
         continue;
       }
-  
+
       // Soft delete the category
       currentCategory.isDeleted = true;
       await this.categoryRepository.save(currentCategory);
-  
+
       // Add its children (sub-categories and products) to the queue
       const children = await this.categoryRepository.find({
         where: { parentCategoryId: currentCategory.id, isDeleted: false },
       });
       children.forEach((child) => queue.push(child));
-  
+
       // Soft delete products associated with the current category
       const products = await this.productRepository.find({
         where: { parentCategoryId: currentCategory.id, isDeleted: 0 },
@@ -228,10 +227,9 @@ export class CategoryService {
         product.isDeleted = 1;
         await this.productRepository.save(product);
       }
-  
+
       // Track deleted category IDs to avoid processing them again
       deletedCategories.push(currentCategory.id);
     }
   }
-  
 }

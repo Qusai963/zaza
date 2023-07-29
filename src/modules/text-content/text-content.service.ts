@@ -17,10 +17,6 @@ export class TextContentService {
     return this.textContentRepository.save(textContent);
   }
 
-  findAll() {
-    return `This action returns all textContent`;
-  }
-
   findOne(id: number) {
     return this.textContentRepository.findOneBy({ id });
   }
@@ -31,9 +27,5 @@ export class TextContentService {
       ...textContent,
       ...updateTextContentDto,
     });
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} textContent`;
   }
 }

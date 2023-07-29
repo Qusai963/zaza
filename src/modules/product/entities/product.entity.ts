@@ -30,7 +30,10 @@ export class Product {
   price: number;
 
   @Column({ nullable: true, unsigned: true })
-  quantity: number;
+  quantityInStock: number;
+
+  @Column()
+  quantityForOnePice: number;
 
   @Column({ nullable: true })
   image: string;

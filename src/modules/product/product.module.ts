@@ -11,6 +11,8 @@ import { LanguageService } from '../language/language.service';
 import { TextContentService } from '../text-content/text-content.service';
 import { TranslationService } from '../translation/translation.service';
 import { Translation } from '../translation/entities/translation.entity';
+import { TaxService } from '../tax/tax.service';
+import { CategoryService } from '../category/category.service';
 
 @Module({
   imports: [
@@ -29,6 +31,8 @@ import { Translation } from '../translation/entities/translation.entity';
     LanguageService,
     TextContentService,
     TranslationService,
+    TaxService,
+    CategoryService,
   ],
 })
 export class ProductModule {}

@@ -20,7 +20,9 @@ import { AuthGuard } from '../auth/guards/auth.guard';
 import { getUserId } from '../user/helper/get-user-id.helper';
 import { DoesPhoneNumberExistGuard } from './guards/Does-phone-number-exists.guard';
 import { CanCreatePhoneNumberGuard } from './guards/can-create-phone-number.guard';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('phone')
 @Controller('phone')
 export class PhoneController {
   constructor(

@@ -4,24 +4,17 @@ import {
   ExecutionContext,
   NotFoundException,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Tax } from '../entities/tax.entity';
+import { TaxService } from '../tax.service';
 
 @Injectable()
 export class DoesProductTaxExistGuard implements CanActivate {
-  constructor(
-    @InjectRepository(Tax)
-    private readonly taxRepository: Repository<Tax>,
-  ) {}
+  constructor(private readonly taxService: TaxService) {}
   async canActivate(context: ExecutionContext) {
     const ctx = context.switchToHttp();
     const request = ctx.getRequest();
     const taxId = request.body.product.taxId;
 
-    const tax = await this.taxRepository.findOneBy({
-      id: taxId,
-    });
+    const tax = await this.taxService.findOne(+taxId);
 
     if (tax) return true;
 

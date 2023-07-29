@@ -7,6 +7,7 @@ import {
   HttpStatus,
   HttpCode,
   Inject,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { AuthGuard } from './guards/auth.guard';
 import { AuthService } from './auth.service';
@@ -19,7 +20,9 @@ import { DoesUserExistGuard } from '../user/guards/does-user-exist.guard';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { catchingError } from 'src/core/error/helper/catching-error';
 import { IsAdminGuard } from './guards/is-admin.guard';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('auth')
 @Controller('auth')
 export class AuthController {
   constructor(

@@ -15,14 +15,17 @@ import { catchingError } from 'src/core/error/helper/catching-error';
 import { REQUEST } from '@nestjs/core';
 import { Request } from 'express';
 import { DoesProductTaxExistGuard } from '../tax/guards/does-product-tax-exists.guard';
-import { DoesLanguageCodeExistGuard } from '../language/guards/does-language-code-exist.guard';
-import { ProductDto } from './dto/product.dto';
 import { TextContentService } from '../text-content/text-content.service';
 import { TranslationService } from '../translation/translation.service';
-import { DoesProductCategoryExistGuard } from '../category/guards/does-product-category-exists.guard';
+import { DoesCategorySafeForProductsGuard } from '../category/guards/does-parent-category-safe-for-products.guard';
 import { DoesLanguageCodeForTranslationExistGuard } from '../language/guards/does-language-code-for-translation-exist.guard';
 import { DoesLanguageCodeForTextContentExistGuard } from '../language/guards/does-language-code-for-textContent-exist.guard';
+import { CreateProductDto } from './dto/create-product.dto';
+import { CreateTextContentDto } from '../text-content/dto/create-text-content.dto';
+import { SecondCreateTranslationDto } from '../translation/dto/create-translation.dto';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('product')
 @Controller('product')
 export class ProductController {
   constructor(
@@ -34,25 +37,28 @@ export class ProductController {
 
   @UseGuards(
     DoesProductTaxExistGuard,
-    DoesProductCategoryExistGuard,
+    DoesCategorySafeForProductsGuard,
     DoesLanguageCodeForTextContentExistGuard,
     DoesLanguageCodeForTranslationExistGuard,
   )
   @Post()
-  async create(@Body() productDto: ProductDto) {
+  async create(
+    @Body('textContent') createTextContentDto: CreateTextContentDto,
+    @Body('translation') createTranslationDtoList: SecondCreateTranslationDto[],
+    @Body('product') createProductDto: CreateProductDto,
+  ) {
     try {
-      const translation = productDto.translation;
-      const textContent = productDto.textContent;
-      const product = productDto.product;
-
       const createdTextContent = await this.textContentService.create(
-        textContent,
+        createTextContentDto,
       );
 
-      await this.translationService.createMany(translation, createdTextContent);
+      await this.translationService.createMany(
+        createTranslationDtoList,
+        createdTextContent,
+      );
 
       const createdProduct = await this.productService.create(
-        product,
+        createProductDto,
         createdTextContent,
       );
 
