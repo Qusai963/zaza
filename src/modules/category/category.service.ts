@@ -51,6 +51,7 @@ export class CategoryService {
         id: category.id,
         type: category.typeName,
         productsNumber: category.productsNumber,
+        image: category.image,
         parentCategoryId: category.parentCategoryId,
         textContentId: category.textContentId,
         translatedText: translatedText || category.textContent.originalText,

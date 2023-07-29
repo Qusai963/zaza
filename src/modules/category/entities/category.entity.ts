@@ -25,7 +25,7 @@ export class Category {
   @Column()
   textContentId: number;
 
-  @Column()
+  @Column({ default: null })
   image: string;
 
   @Column({ default: false })
