@@ -32,6 +32,7 @@ export class CategoryService {
     const categories = await this.categoryRepository.findAndCount({
       where: {
         parentCategoryId: IsNull(),
+        isDeleted: false,
       },
       take: limit,
       skip: (page - 1) * limit,

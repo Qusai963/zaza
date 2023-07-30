@@ -14,7 +14,7 @@ import { TextContent } from '../text-content/entities/text-content.entity';
   imports: [
     TypeOrmModule.forFeature([Category, Product, TextContent]),
     MulterModule.register({
-      dest: './uploads',
+      dest: '../uploads',
     }),
   ],
   controllers: [ImagesController],
