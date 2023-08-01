@@ -31,7 +31,9 @@ export class DoesParentCategorySafeForCategoriesGuard implements CanActivate {
 
     if (!parentCategoryId) return true;
 
-    const parentCategory = await this.categoryService.findOne(+parentCategoryId);
+    const parentCategory = await this.categoryService.findOne(
+      +parentCategoryId,
+    );
 
     if (!parentCategory)
       throw new NotFoundException(CATEGORY_NOT_FOUND.getMessage(language));
@@ -39,8 +41,10 @@ export class DoesParentCategorySafeForCategoriesGuard implements CanActivate {
     if (parentCategory.typeName === CategoryTypeEnum.LEAF)
       throw new NotFoundException('Invalid category');
 
-    parentCategory.typeName = CategoryTypeEnum.NODE;
-    await this.categoryRepository.save(parentCategory);
+    if (parentCategory.typeName !== CategoryTypeEnum.NODE) {
+      parentCategory.typeName = CategoryTypeEnum.NODE;
+      await this.categoryRepository.save(parentCategory);
+    }
     return true;
   }
 }

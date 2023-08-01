@@ -16,6 +16,7 @@ import {
   MaxFileSizeValidator,
   FileTypeValidator,
   NotFoundException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { CategoryService } from './category.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
@@ -120,15 +121,25 @@ export class CategoryController {
     );
   }
 
-  @UseGuards(AuthGuard, IsAdminGuard, DoesCategoryExistGuard)
+  @UseGuards(
+    AuthGuard,
+    IsAdminGuard,
+    DoesCategoryExistGuard,
+    DoesParentCategorySafeForCategoriesGuard,
+  )
   @Patch(':id')
   async update(
     @Param('id') id: string,
+    @Body('parentCategoryId') parentCategoryId: number,
     @Body('textContent') updateTextContentDto: UpdateTextContentDto,
     @Body('translation')
     updateSecondTranslationDtoList: UpdateSecondTranslationDtoList[],
   ) {
     const category = await this.categoryService.findOne(+id);
+    if (category.id === parentCategoryId)
+      throw new ForbiddenException(
+        'you can not make a category reference to itself',
+      );
     const textContentId = category.textContentId;
     const updatedTextContent = await this.textContentService.update(
       +textContentId,
@@ -138,7 +149,8 @@ export class CategoryController {
       textContentId,
       updateSecondTranslationDtoList,
     );
-
+    category.parentCategoryId = parentCategoryId;
+    await this.categoryRepository.save(category);
     return { category, updatedTextContent, updatedTranslation };
   }
 
