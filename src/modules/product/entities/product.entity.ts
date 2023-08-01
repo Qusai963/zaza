@@ -39,7 +39,7 @@ export class Product {
   image: string;
 
   @Column({ nullable: true })
-  barcode: string;
+  barCode: string;
 
   @CreateDateColumn()
   createdAt: Date;
