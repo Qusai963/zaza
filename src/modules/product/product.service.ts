@@ -36,7 +36,7 @@ export class ProductService {
     code: string,
   ) {
     const [products, totalCount] = await this.productRepository.findAndCount({
-      where: { parentCategoryId },
+      where: { parentCategoryId, isDeleted: 0 },
       take: limit,
       skip: (page - 1) * limit,
       relations: ['textContent', 'textContent.translations'],

@@ -67,24 +67,19 @@ export class CategoryController {
     @Body('textContent') createTextContentDto: CreateTextContentDto,
     @Body('translation') createTranslationDtoList: SecondCreateTranslationDto[],
   ) {
-    try {
-      const createdTextContent = await this.textContentService.create(
-        createTextContentDto,
-      );
+    const createdTextContent = await this.textContentService.create(
+      createTextContentDto,
+    );
 
-      // TODO: apply validation on this array
-      await this.translationService.createMany(
-        createTranslationDtoList,
-        createdTextContent,
-      );
-
-      return this.categoryService.create(
-        createCategoryDto.parentCategoryId,
-        createdTextContent,
-      );
-    } catch (error) {
-      catchingError(error, this.request);
-    }
+    // TODO: apply validation on this array
+    await this.translationService.createMany(
+      createTranslationDtoList,
+      createdTextContent,
+    );
+    return this.categoryService.create(
+      createCategoryDto.parentCategoryId,
+      createdTextContent,
+    );
   }
 
   @UseGuards(AuthGuard)
@@ -94,11 +89,7 @@ export class CategoryController {
     @ParamRequired('page') page: string,
     @Query('language') language: string,
   ) {
-    try {
-      return this.categoryService.findAllFathers(+limit, +page, language);
-    } catch (error) {
-      catchingError(error, this.request);
-    }
+    return this.categoryService.findAllFathers(+limit, +page, language);
   }
 
   @UseGuards(AuthGuard, IsAdminGuard)
@@ -119,16 +110,12 @@ export class CategoryController {
     @ParamRequired('page') page: string,
     @Query('language') language: string,
   ) {
-    try {
-      return this.categoryService.findOneWithChildren(
-        +id,
-        +limit,
-        +page,
-        language,
-      );
-    } catch (error) {
-      catchingError(error, this.request);
-    }
+    return this.categoryService.findOneWithChildren(
+      +id,
+      +limit,
+      +page,
+      language,
+    );
   }
 
   @UseGuards(AuthGuard, IsAdminGuard, DoesCategoryExistGuard)
@@ -139,32 +126,24 @@ export class CategoryController {
     @Body('translation')
     updateSecondTranslationDtoList: UpdateSecondTranslationDtoList[],
   ) {
-    try {
-      const category = await this.categoryService.findOne(+id);
-      const textContentId = category.textContentId;
-      const updatedTextContent = await this.textContentService.update(
-        +textContentId,
-        updateTextContentDto,
-      );
-      const updatedTranslation = await this.translationService.update(
-        textContentId,
-        updateSecondTranslationDtoList,
-      );
+    const category = await this.categoryService.findOne(+id);
+    const textContentId = category.textContentId;
+    const updatedTextContent = await this.textContentService.update(
+      +textContentId,
+      updateTextContentDto,
+    );
+    const updatedTranslation = await this.translationService.update(
+      textContentId,
+      updateSecondTranslationDtoList,
+    );
 
-      return { category, updatedTextContent, updatedTranslation };
-    } catch (error) {
-      catchingError(error, this.request);
-    }
+    return { category, updatedTextContent, updatedTranslation };
   }
 
   @UseGuards(AuthGuard, IsAdminGuard, DoesCategoryExistGuard)
   @Delete(':id')
   remove(@Param('id') id: string) {
-    try {
-      return this.categoryService.remove(+id);
-    } catch (error) {
-      catchingError(error, this.request);
-    }
+    return this.categoryService.remove(+id);
   }
 
   @UseGuards(AuthGuard, IsAdminGuard)

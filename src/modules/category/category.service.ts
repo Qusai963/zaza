@@ -71,12 +71,20 @@ export class CategoryService {
     page: number,
     code: string,
   ) {
-    const category = await this.findOne(id);
-    if (!category) throw new NotFoundException();
+    const category = await this.findOneWithTextContentAndTranslations(id);
+
+    const translatedMainCategory = category.textContent.translations.find(
+      (translation) => translation.code === code,
+    );
+
+    const translatedTextForMainCategory = translatedMainCategory
+      ? translatedMainCategory.translation
+      : category.textContent.originalText;
 
     const hasCategories = await this.categoryRepository.findAndCount({
       where: {
         parentCategoryId: id,
+        isDeleted: false,
       },
       take: limit,
       skip: (page - 1) * limit,
@@ -106,10 +114,12 @@ export class CategoryService {
       });
 
       return {
-        ...category,
-        translatedText:
-          translatedCategories[0]?.translatedText ||
-          category.textContent.originalText,
+        translatedText: translatedTextForMainCategory,
+        id: category.id,
+        type: category.typeName,
+        productsNumber: category.productsNumber,
+        parentCategoryId: category.parentCategoryId,
+        image: category.image,
 
         count: numberOfCategories,
         categories: translatedCategories,
@@ -124,43 +134,36 @@ export class CategoryService {
         code,
       );
 
-    if (numberOfProducts > 0) {
+    if (numberOfProducts > 0)
       return {
         type: category.typeName,
-
-        ...category,
-        translatedText:
-          products[0]?.translatedText || category.textContent.originalText,
-
+        id: category.id,
+        productsNumber: category.productsNumber,
+        image: category.image,
+        translatedText: translatedTextForMainCategory,
         count: numberOfProducts,
         products,
       };
-    }
-
-    // Retrieve the text content with translations
-    const textContent = await this.textContentRepository.findOne({
-      where: {
-        id: category.textContentId,
-      },
-      relations: ['translations'],
-    });
-
-    const translation = textContent.translations.find(
-      (translation) => translation.code === code,
-    );
-
-    const translatedText = translation
-      ? translation.translation
-      : textContent.originalText;
 
     return {
-      ...category,
-      translatedText: translatedText || textContent.originalText,
+      id: category.id,
+      parentCategoryId: category.parentCategoryId,
+      type: category.typeName,
+      productsNumber: category.productsNumber,
+      image: category.image,
+      translatedText: translatedTextForMainCategory,
     };
   }
 
   findOne(id: number) {
     return this.categoryRepository.findOneBy({ id, isDeleted: false });
+  }
+
+  findOneWithTextContentAndTranslations(id: number) {
+    return this.categoryRepository.findOne({
+      where: { id, isDeleted: false },
+      relations: ['textContent', 'textContent.translations'],
+    });
   }
 
   async findAllThatAcceptProducts(code: string) {
