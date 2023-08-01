@@ -200,12 +200,9 @@ export class CategoryService {
     const queue = []; // Use queue for BFS
     const deletedCategories: number[] = []; // Keep track of deleted category IDs
 
-    // Start with the given category ID
-    queue.push(
-      await this.categoryRepository.findOne({
-        where: { id, isDeleted: false },
-      }),
-    );
+    // Start with the given category
+    const givenCategory = await this.findOne(id);
+    queue.push(givenCategory);
 
     while (queue.length > 0) {
       const currentCategory = queue.shift();
@@ -235,6 +232,20 @@ export class CategoryService {
 
       // Track deleted category IDs to avoid processing them again
       deletedCategories.push(currentCategory.id);
+    }
+
+    if (givenCategory.parentCategoryId) {
+      const categoryBrother = await this.categoryRepository.findOneBy({
+        parentCategoryId: +givenCategory.parentCategoryId,
+        isDeleted: false,
+      });
+      if (!categoryBrother) {
+        const parentCategory = await this.findOne(
+          +givenCategory.parentCategoryId,
+        );
+        parentCategory.typeName = CategoryTypeEnum.UNKNOWN;
+        await this.categoryRepository.save(parentCategory);
+      }
     }
   }
 }
