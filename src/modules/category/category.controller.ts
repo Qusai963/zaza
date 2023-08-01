@@ -95,11 +95,13 @@ export class CategoryController {
   @UseGuards(AuthGuard, IsAdminGuard)
   @Get('acceptProducts')
   findAllThatAcceptProducts(@Query('language') language: string) {
-    try {
-      return this.categoryService.findAllThatAcceptProducts(language);
-    } catch (error) {
-      catchingError(error, this.request);
-    }
+    return this.categoryService.findAllThatAcceptProducts(language);
+  }
+
+  @UseGuards(AuthGuard, DoesCategoryExistGuard)
+  @Get(':id/findWithRelation')
+  findOneWithRelations(@Param('id') id: string) {
+    return this.categoryService.findOneWithTextContentAndTranslations(+id);
   }
 
   @UseGuards(AuthGuard, DoesCategoryExistGuard)

@@ -50,7 +50,7 @@ export class CategoryService {
 
       return {
         id: category.id,
-        type: category.typeName,
+        typeName: category.typeName,
         productsNumber: category.productsNumber,
         image: category.image,
         parentCategoryId: category.parentCategoryId,
@@ -105,7 +105,7 @@ export class CategoryService {
         return {
           id: category.id,
           productsNumber: category.productsNumber,
-          type: category.typeName,
+          typeName: category.typeName,
           parentCategoryId: category.parentCategoryId,
           image: category.image,
           textContentId: category.textContentId,
@@ -116,7 +116,7 @@ export class CategoryService {
       return {
         translatedText: translatedTextForMainCategory,
         id: category.id,
-        type: category.typeName,
+        typeName: category.typeName,
         productsNumber: category.productsNumber,
         parentCategoryId: category.parentCategoryId,
         image: category.image,
@@ -148,7 +148,7 @@ export class CategoryService {
     return {
       id: category.id,
       parentCategoryId: category.parentCategoryId,
-      type: category.typeName,
+      typeName: category.typeName,
       productsNumber: category.productsNumber,
       image: category.image,
       translatedText: translatedTextForMainCategory,
