@@ -9,13 +9,16 @@ export class ProductUnit {
   id: number;
 
   @Column()
-  textContentId: number;
-
-  @Column()
   productId: number;
 
   @Column()
   unitId: number;
+
+  @Column()
+  textContentId: number;
+
+  @Column('double', { nullable: true })
+  price: number;
 
   @ManyToOne(() => Product, (product) => product.productUnits)
   product: Product;

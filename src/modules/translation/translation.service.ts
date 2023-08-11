@@ -19,13 +19,13 @@ export class TranslationService {
 
   async createMany(
     createTranslationDto: CreateTranslationDto[],
-    textContent: TextContent,
+    textContentId: number,
   ) {
     const createdTranslations = [];
 
     for (const translationDto of createTranslationDto) {
       const translation = this.translationRepository.create({
-        textContent,
+        textContentId,
         ...translationDto,
       });
       const createdTranslation = await this.translationRepository.save(

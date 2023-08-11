@@ -48,11 +48,11 @@ import { CategoryType } from './modules/category/entities/category-type.entity';
     DiscountSpecificUserModule,
     AuthModule,
     TaxModule,
+    ProductUnitModule,
     MulterModule.register({
       dest: '../uploads',
     }),
     UnitModule,
-    ProductUnitModule,
   ],
   controllers: [],
   providers: [AuthService, JwtService, LanguageService, AppService],

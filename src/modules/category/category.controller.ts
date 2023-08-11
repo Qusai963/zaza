@@ -16,14 +16,12 @@ import {
   MaxFileSizeValidator,
   FileTypeValidator,
   NotFoundException,
-  ForbiddenException,
 } from '@nestjs/common';
 import { CategoryService } from './category.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { DoesParentCategorySafeForCategoriesGuard } from './guards/does-parent-category-safe-for-categories.guard';
 import { REQUEST } from '@nestjs/core';
 import { Request } from 'express';
-import { catchingError } from 'src/core/error/helper/catching-error';
 import { TranslationService } from '../translation/translation.service';
 import { TextContentService } from '../text-content/text-content.service';
 import { DoesLanguageCodeForTextContentExistGuard } from '../language/guards/does-language-code-for-textContent-exist.guard';
@@ -75,7 +73,7 @@ export class CategoryController {
     // TODO: apply validation on this array
     await this.translationService.createMany(
       createTranslationDtoList,
-      createdTextContent,
+      createdTextContent.id,
     );
     return this.categoryService.create(
       createCategoryDto.parentCategoryId,

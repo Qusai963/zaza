@@ -13,6 +13,14 @@ import { TranslationService } from '../translation/translation.service';
 import { Translation } from '../translation/entities/translation.entity';
 import { TaxService } from '../tax/tax.service';
 import { CategoryService } from '../category/category.service';
+import { JwtService } from '@nestjs/jwt';
+import { UserService } from '../user/user.service';
+import { User } from '../user/entities/user.entity';
+import { ImagesService } from '../images/images.service';
+import { MulterModule } from '@nestjs/platform-express';
+import { ProductUnitService } from '../product-unit/product-unit.service';
+import { ProductUnit } from '../product-unit/entities/product-unit.entity';
+import { Unit } from '../unit/entities/unit.entity';
 
 @Module({
   imports: [
@@ -23,7 +31,13 @@ import { CategoryService } from '../category/category.service';
       Category,
       Language,
       Translation,
+      User,
+      ProductUnit,
+      Unit,
     ]),
+    MulterModule.register({
+      dest: '../uploads',
+    }),
   ],
   controllers: [ProductController],
   providers: [
@@ -33,6 +47,10 @@ import { CategoryService } from '../category/category.service';
     TranslationService,
     TaxService,
     CategoryService,
+    JwtService,
+    UserService,
+    ImagesService,
+    ProductUnitService,
   ],
 })
 export class ProductModule {}

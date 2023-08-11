@@ -56,7 +56,7 @@ export class UnitController {
       // TODO: apply validation on this array
       await this.translationService.createMany(
         createTranslationDtoList,
-        createdTextContent,
+        createdTextContent.id,
       );
 
       return this.unitService.create(createdTextContent);

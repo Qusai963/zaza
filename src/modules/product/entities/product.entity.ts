@@ -26,16 +26,10 @@ export class Product {
   @Column()
   parentCategoryId: number;
 
-  @Column('double', { nullable: true })
-  price: number;
-
   @Column({ nullable: true, unsigned: true })
   quantityInStock: number;
 
-  @Column()
-  quantityForOnePice: number;
-
-  @Column({ nullable: true })
+  @Column({ nullable: true, default: null })
   image: string;
 
   @Column({ nullable: true })

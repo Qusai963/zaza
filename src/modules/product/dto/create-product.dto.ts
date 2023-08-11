@@ -13,10 +13,6 @@ export class CreateProductDto {
   readonly quantityInStock: number;
 
   @IsOptional()
-  @IsString()
-  readonly image: string;
-
-  @IsOptional()
   @IsNumber()
   @Min(0)
   readonly price: number;

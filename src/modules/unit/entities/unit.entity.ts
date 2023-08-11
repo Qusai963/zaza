@@ -25,6 +25,8 @@ export class Unit {
   })
   textContent: TextContent;
 
-  @OneToMany(() => ProductUnit, (productUnit) => productUnit.unit)
+  @OneToMany(() => ProductUnit, (productUnit) => productUnit.unit, {
+    onDelete: 'CASCADE',
+  })
   productUnits: ProductUnit[];
 }

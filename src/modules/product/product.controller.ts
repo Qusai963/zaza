@@ -1,3 +1,4 @@
+import { FileInterceptor } from '@nestjs/platform-express';
 import {
   Controller,
   Get,
@@ -8,6 +9,12 @@ import {
   Delete,
   Inject,
   UseGuards,
+  UseInterceptors,
+  UploadedFile,
+  ParseFilePipe,
+  MaxFileSizeValidator,
+  FileTypeValidator,
+  NotFoundException,
 } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -24,57 +31,78 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { CreateTextContentDto } from '../text-content/dto/create-text-content.dto';
 import { SecondCreateTranslationDto } from '../translation/dto/create-translation.dto';
 import { ApiTags } from '@nestjs/swagger';
+import { AuthGuard } from '../auth/guards/auth.guard';
+import { IsAdminGuard } from '../auth/guards/is-admin.guard';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Product } from './entities/product.entity';
+import { Repository } from 'typeorm';
+import { CreateProductUnitDto } from '../product-unit/dto/create-product-unit.dto';
+import { ProductUnitService } from '../product-unit/product-unit.service';
+import { DoesUnitIdForProductUnitExistGuard } from './guards/does-unit-id-for-product-unit-exist.guard';
+import { DoesProductUnitLanguageCodeForTextContentExistGuard } from './guards/does-product-unit-language-code-for-textContent-exist.guard';
+import { DoesProductUnitLanguageCodeForTranslationExistGuard } from './guards/does-product-unit-language-code-for-translation-exist.guard';
 
 @ApiTags('product')
 @Controller('product')
 export class ProductController {
   constructor(
     private readonly productService: ProductService,
+    private readonly productUnitService: ProductUnitService,
     private readonly textContentService: TextContentService,
     private readonly translationService: TranslationService,
     @Inject(REQUEST) private request: Request,
+    @InjectRepository(Product)
+    private readonly productRepository: Repository<Product>,
   ) {}
 
   @UseGuards(
+    AuthGuard,
+    IsAdminGuard,
     DoesProductTaxExistGuard,
     DoesCategorySafeForProductsGuard,
     DoesLanguageCodeForTextContentExistGuard,
     DoesLanguageCodeForTranslationExistGuard,
+    DoesProductUnitLanguageCodeForTextContentExistGuard,
+    DoesProductUnitLanguageCodeForTranslationExistGuard,
+    DoesUnitIdForProductUnitExistGuard,
   )
   @Post()
   async create(
     @Body('textContent') createTextContentDto: CreateTextContentDto,
     @Body('translation') createTranslationDtoList: SecondCreateTranslationDto[],
     @Body('product') createProductDto: CreateProductDto,
+    @Body('productUnit') createProductUnitDto: CreateProductUnitDto[],
   ) {
-    try {
-      const createdTextContent = await this.textContentService.create(
-        createTextContentDto,
-      );
+    const createdTextContent = await this.textContentService.create(
+      createTextContentDto,
+    );
 
-      await this.translationService.createMany(
-        createTranslationDtoList,
-        createdTextContent,
-      );
+    const translation = await this.translationService.createMany(
+      createTranslationDtoList,
+      createdTextContent.id,
+    );
 
-      const createdProduct = await this.productService.create(
-        createProductDto,
-        createdTextContent,
-      );
+    const createdProduct = await this.productService.create(
+      createProductDto,
+      createdTextContent,
+    );
 
-      return { product: createdProduct };
-    } catch (error) {
-      catchingError(error, this.request);
-    }
+    const productUnit = await this.productUnitService.createMany(
+      createProductUnitDto,
+      +createdProduct.id,
+    );
+
+    return {
+      product: createdProduct,
+      textContent: createdTextContent,
+      translation,
+      productUnit,
+    };
   }
 
   @Get()
   findAll() {
-    try {
-      return this.productService.findAll();
-    } catch (error) {
-      catchingError(error, this.request);
-    }
+    return this.productService.findAll();
   }
 
   @Get(':id')
@@ -90,5 +118,32 @@ export class ProductController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.productService.remove(+id);
+  }
+
+  @UseGuards(AuthGuard, IsAdminGuard)
+  @Post('image')
+  @UseInterceptors(FileInterceptor('image'))
+  async createImage(
+    @Body('id') id: string,
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          new MaxFileSizeValidator({ maxSize: 10000000 }),
+          new FileTypeValidator({ fileType: '.(png|jpeg|jpg)' }),
+        ],
+      }),
+    )
+    path: Express.Multer.File,
+  ) {
+    const product = await this.productRepository.findOneBy({
+      id: +id,
+      isDeleted: 0,
+    });
+
+    if (!product) throw new NotFoundException('Product not found');
+
+    product.image = path.filename;
+    await this.productRepository.save(product);
+    return product;
   }
 }

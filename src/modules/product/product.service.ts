@@ -56,7 +56,6 @@ export class ProductService {
         barCode: product.barCode,
         image: product.image,
         quantityInStock: product.quantityInStock,
-        quantityForOnePice: product.quantityForOnePice,
         parentCategoryId: product.parentCategoryId,
         textContentId: product.textContentId,
         translatedText: translatedText || product.textContent.originalText,

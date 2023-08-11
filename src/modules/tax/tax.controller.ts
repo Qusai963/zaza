@@ -59,7 +59,7 @@ export class TaxController {
       // TODO: apply validation on this array
       await this.translationService.createMany(
         createTranslationDtoList,
-        createdTextContent,
+        createdTextContent.id,
       );
       return this.taxService.create(createTaxDto, createdTextContent);
     } catch (error) {

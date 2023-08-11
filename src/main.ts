@@ -4,7 +4,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { AppService } from './app.service';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { NestExpressApplication } from '@nestjs/platform-express';
-import { dirname, join } from 'path';
+import { join } from 'path';
 import { CustomExceptionFilter } from './core/filter/custom-exceptipon-filter';
 //import * as csurf from 'csurf';
 
@@ -27,7 +27,7 @@ async function bootstrap() {
 
   app.useGlobalPipes(new ValidationPipe());
   // app.use(csurf());
-  app.useGlobalFilters(new CustomExceptionFilter());
+//  app.useGlobalFilters(new CustomExceptionFilter());
   await app.listen(3333);
 }
 bootstrap();

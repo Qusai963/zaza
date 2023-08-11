@@ -22,6 +22,8 @@ export class DoesLanguageCodeForTranslationExistGuard implements CanActivate {
 
     const code = [];
     for (const translation of translations) {
+      if (!translation.translation)
+        throw new BadRequestException('translation is empty');
       code.push(translation.code);
     }
     const codeCount = await this.languageRepository.count({
@@ -30,7 +32,9 @@ export class DoesLanguageCodeForTranslationExistGuard implements CanActivate {
       },
     });
     if (codeCount != code.length)
-      throw new BadRequestException('Language code in translation does not exist');
+      throw new BadRequestException(
+        'Language code in translation does not exist',
+      );
 
     return true;
   }
