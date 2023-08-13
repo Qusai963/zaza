@@ -14,6 +14,9 @@ export class ProductUnit {
   @Column()
   unitId: number;
 
+  @Column({ nullable: true, unsigned: true, default: 0 })
+  quantity: number;
+
   @Column()
   textContentId: number;
 

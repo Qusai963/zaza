@@ -9,11 +9,6 @@ import {
 export class CreateProductDto {
   @IsOptional()
   @IsNumber()
-  @Min(1)
-  readonly quantityInStock: number;
-
-  @IsOptional()
-  @IsNumber()
   @Min(0)
   readonly price: number;
 

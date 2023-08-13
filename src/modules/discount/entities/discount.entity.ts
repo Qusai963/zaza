@@ -19,6 +19,9 @@ export class Discount {
   @Column('double')
   percent: number;
 
+  @Column({ default: false })
+  isDeleted: boolean;
+
   @CreateDateColumn()
   createdAt: Date;
 

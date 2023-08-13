@@ -4,6 +4,7 @@ import {
   Get,
   Post,
   Body,
+  Query,
   Patch,
   Param,
   Delete,
@@ -18,7 +19,6 @@ import {
 } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { UpdateProductDto } from './dto/update-product.dto';
-import { catchingError } from 'src/core/error/helper/catching-error';
 import { REQUEST } from '@nestjs/core';
 import { Request } from 'express';
 import { DoesProductTaxExistGuard } from '../tax/guards/does-product-tax-exists.guard';
@@ -41,6 +41,9 @@ import { ProductUnitService } from '../product-unit/product-unit.service';
 import { DoesUnitIdForProductUnitExistGuard } from './guards/does-unit-id-for-product-unit-exist.guard';
 import { DoesProductUnitLanguageCodeForTextContentExistGuard } from './guards/does-product-unit-language-code-for-textContent-exist.guard';
 import { DoesProductUnitLanguageCodeForTranslationExistGuard } from './guards/does-product-unit-language-code-for-translation-exist.guard';
+import { QueryFilter } from 'src/core/query/query-filter.query';
+import { LanguageQuery } from 'src/core/query/language.query';
+import { DoesProductExistGuard } from './guards/does-product-exist.guard';
 
 @ApiTags('product')
 @Controller('product')
@@ -100,21 +103,25 @@ export class ProductController {
     };
   }
 
+  @UseGuards(AuthGuard)
   @Get()
-  findAll() {
-    return this.productService.findAll();
+  findAll(@Query() query: QueryFilter) {
+    return this.productService.findAll(query);
   }
 
+  @UseGuards(AuthGuard, DoesProductExistGuard)
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.productService.findOne(+id);
+  findOne(@Param('id') id: string, @Query() language: LanguageQuery) {
+    return this.productService.findOneWithRelations(+id, language);
   }
 
+  @UseGuards(AuthGuard, IsAdminGuard, DoesProductExistGuard)
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
     return this.productService.update(+id, updateProductDto);
   }
 
+  @UseGuards(AuthGuard, IsAdminGuard, DoesProductExistGuard)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.productService.remove(+id);

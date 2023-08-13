@@ -26,9 +26,6 @@ export class Product {
   @Column()
   parentCategoryId: number;
 
-  @Column({ nullable: true, unsigned: true })
-  quantityInStock: number;
-
   @Column({ nullable: true, default: null })
   image: string;
 

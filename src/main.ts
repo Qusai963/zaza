@@ -5,7 +5,7 @@ import { AppService } from './app.service';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
-import { CustomExceptionFilter } from './core/filter/custom-exceptipon-filter';
+import { CustomExceptionFilter } from './core/filters/custom-exceptipon-filter';
 //import * as csurf from 'csurf';
 
 async function bootstrap() {

@@ -40,6 +40,7 @@ export class ProductUnitService {
         productId,
         unitId: productUnitDto.unitId,
         price: productUnitDto.price,
+        quantity: productUnitDto.quantity,
       });
       const createdProductUnit = await this.productUnitRepository.save(
         productUnit,

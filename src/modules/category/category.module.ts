@@ -16,6 +16,7 @@ import { ImagesService } from '../images/images.service';
 import { JwtService } from '@nestjs/jwt';
 import { UserService } from '../user/user.service';
 import { User } from '../user/entities/user.entity';
+import { ProductUnit } from '../product-unit/entities/product-unit.entity';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { User } from '../user/entities/user.entity';
       Translation,
       Language,
       Product,
+      ProductUnit,
       User,
     ]),
   ],

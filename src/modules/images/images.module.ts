@@ -9,10 +9,11 @@ import { Product } from '../product/entities/product.entity';
 import { ProductService } from '../product/product.service';
 import { TextContentService } from '../text-content/text-content.service';
 import { TextContent } from '../text-content/entities/text-content.entity';
+import { ProductUnit } from '../product-unit/entities/product-unit.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Category, Product, TextContent]),
+    TypeOrmModule.forFeature([Category, Product, TextContent, ProductUnit]),
     MulterModule.register({
       dest: '../uploads',
     }),
