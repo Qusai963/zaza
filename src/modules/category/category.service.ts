@@ -6,6 +6,7 @@ import { Category } from './entities/category.entity';
 import { TextContent } from '../text-content/entities/text-content.entity';
 import { CategoryTypeEnum } from './constants/category-enum';
 import { Product } from '../product/entities/product.entity';
+import { QueryFilter } from 'src/core/query/query-filter.query';
 
 @Injectable()
 export class CategoryService {
@@ -126,13 +127,13 @@ export class CategoryService {
       };
     }
 
-    const { products, count: numberOfProducts } =
-      await this.productService.findAllAndCountByCategoryId(
-        id,
-        limit,
-        page,
-        code,
-      );
+    let query = new QueryFilter();
+    query.limit = limit;
+    query.page = page;
+    query.language = code;
+
+    const { translatedProducts, count: numberOfProducts } =
+      await this.productService.findAll(query, id);
 
     if (numberOfProducts > 0)
       return {
@@ -142,7 +143,7 @@ export class CategoryService {
         image: category.image,
         translatedText: translatedTextForMainCategory,
         count: numberOfProducts,
-        products,
+        translatedProducts,
       };
 
     return {

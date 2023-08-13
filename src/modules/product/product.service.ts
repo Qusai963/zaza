@@ -28,9 +28,14 @@ export class ProductService {
     return this.productRepository.findOneBy({ id: newProduct.id });
   }
 
-  async findAll(query: QueryFilter) {
+  async findAll(query: QueryFilter, parentCategoryId: number = -1) {
     const [products, count] = await this.productRepository.findAndCount({
-      where: [{ ...getWhereByCondition(query.search), isDeleted: 0 }],
+      where: [
+        {
+          ...getWhereByCondition(query.search, parentCategoryId),
+          isDeleted: 0,
+        },
+      ],
       order: getOrderByCondition(query.sort),
       take: query.limit,
       skip: (query.page - 1) * query.limit,
