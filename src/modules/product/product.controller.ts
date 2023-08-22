@@ -35,7 +35,7 @@ import { AuthGuard } from '../auth/guards/auth.guard';
 import { IsAdminGuard } from '../auth/guards/is-admin.guard';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Product } from './entities/product.entity';
-import { Repository } from 'typeorm';
+import { Repository, UpdateQueryBuilder } from 'typeorm';
 import { CreateProductUnitDto } from '../product-unit/dto/create-product-unit.dto';
 import { ProductUnitService } from '../product-unit/product-unit.service';
 import { DoesUnitIdForProductUnitExistGuard } from './guards/does-unit-id-for-product-unit-exist.guard';
@@ -44,6 +44,11 @@ import { DoesProductUnitLanguageCodeForTranslationExistGuard } from './guards/do
 import { QueryFilter } from 'src/core/query/query-filter.query';
 import { LanguageQuery } from 'src/core/query/language.query';
 import { DoesProductExistGuard } from './guards/does-product-exist.guard';
+import { UpdateTextContentDto } from '../text-content/dto/update-text-content.dto';
+import { UpdateSecondTranslationDtoList } from '../translation/dto/update-translation.dto';
+import { UpdateProductQuantityDto } from './dto/update-product-quantity.dto';
+import { DoesTaxExistInBodyGuard } from '../tax/guards/does-tax-exists-in-body.guard';
+import { TaxIdDto } from './dto/taxId-dto';
 
 @ApiTags('product')
 @Controller('product')
@@ -116,9 +121,92 @@ export class ProductController {
   }
 
   @UseGuards(AuthGuard, IsAdminGuard, DoesProductExistGuard)
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
-    return this.productService.update(+id, updateProductDto);
+  @Get('findOneWithSimpleRelationsForUpdating/:id')
+  findOneWithSimpleRelationsForUpdating(@Param('id') id: string) {
+    return this.productService.findOneWithSimpleRelationsForUpdating(+id);
+  }
+
+  @UseGuards(AuthGuard, IsAdminGuard, DoesProductExistGuard)
+  @Get('findOneWithTaxRelationsForUpdating/:id')
+  findOneWithTaxRelationsForUpdating(@Param('id') id: string) {
+    return this.productService.findOneWithTaxRelationsForUpdating(+id);
+  }
+
+  @UseGuards(AuthGuard, IsAdminGuard, DoesProductExistGuard)
+  @Get('findOneWithComplexRelationsForUpdating/:id')
+  findOneWithComplexRelationsForUpdating(
+    @Param('id') id: string,
+    @Body('productUnit') createProductUnitDto: CreateProductUnitDto[],
+  ) {
+    return this.productService.findOneWithComplexRelationsForUpdating(+id);
+  }
+
+  // @UseGuards(AuthGuard, IsAdminGuard, DoesProductExistGuard)
+  // @Patch('complexUpdate/:id')
+  // complexUpdate(@Param('id') id: string) {
+  //   return this.productService.complexUpdate(+id);
+  // }
+
+  @UseGuards(AuthGuard, IsAdminGuard, DoesProductExistGuard)
+  @Get('findOneWithQuantity/:id')
+  findOneWithQuantity(@Param('id') id: string) {
+    return this.productService.findOneWithQuantity(+id);
+  }
+
+  @UseGuards(
+    AuthGuard,
+    IsAdminGuard,
+    DoesProductExistGuard,
+    DoesTaxExistInBodyGuard,
+  )
+  @Patch('updateTax/:id')
+  updateProductTax(@Param('id') id: string, @Body() taxIdDto: TaxIdDto) {
+    return this.productService.updateProductTax(+id, taxIdDto);
+  }
+
+  @UseGuards(
+    AuthGuard,
+    IsAdminGuard,
+    DoesProductExistGuard,
+    DoesLanguageCodeForTextContentExistGuard,
+    DoesLanguageCodeForTranslationExistGuard,
+    DoesCategorySafeForProductsGuard,
+  )
+  @Patch('simpleUpdate/:id')
+  async simpleUpdate(
+    @Param('id') id: string,
+    @Body('product') updateProductDto: UpdateProductDto,
+    @Body('textContent') updateTextContentDto: UpdateTextContentDto,
+    @Body('translation')
+    updateSecondTranslationDtoList: UpdateSecondTranslationDtoList[],
+  ) {
+    const product = await this.productService.findOne(+id);
+
+    const textContentId = product.textContentId;
+    const updatedTextContent = await this.textContentService.update(
+      +textContentId,
+      updateTextContentDto,
+    );
+    const updatedTranslation = await this.translationService.update(
+      textContentId,
+      updateSecondTranslationDtoList,
+    );
+
+    await this.productRepository.save({ ...product, ...updateProductDto });
+
+    return { product, updatedTextContent, updatedTranslation };
+  }
+
+  @UseGuards(AuthGuard, IsAdminGuard, DoesProductExistGuard)
+  @Patch('updateQuantity/:id')
+  async updateQuantity(
+    @Param('id') id: string,
+    @Body() updateProductQuantityDtoList: UpdateProductQuantityDto[],
+  ) {
+    return this.productService.updateQuantity(
+      +id,
+      updateProductQuantityDtoList,
+    );
   }
 
   @UseGuards(AuthGuard, IsAdminGuard, DoesProductExistGuard)

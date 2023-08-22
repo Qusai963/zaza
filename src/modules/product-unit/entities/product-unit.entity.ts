@@ -14,6 +14,9 @@ export class ProductUnit {
   @Column()
   unitId: number;
 
+  @Column({ type: 'tinyint', width: 1, default: 0 })
+  isDeleted: number;
+
   @Column({ nullable: true, unsigned: true, default: 0 })
   quantity: number;
 

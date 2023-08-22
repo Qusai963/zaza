@@ -10,6 +10,8 @@ import { getOrderByCondition } from 'src/core/helpers/sort.helper';
 import { getWhereByCondition } from 'src/core/helpers/search.helper';
 import { LanguageQuery } from 'src/core/query/language.query';
 import { ProductUnit } from '../product-unit/entities/product-unit.entity';
+import { UpdateProductQuantityDto } from './dto/update-product-quantity.dto';
+import { TaxIdDto } from './dto/taxId-dto';
 
 @Injectable()
 export class ProductService {
@@ -26,6 +28,10 @@ export class ProductService {
     const newProduct = await this.productRepository.save(product);
 
     return this.productRepository.findOneBy({ id: newProduct.id });
+  }
+
+  findByTaxId(taxId: number) {
+    return this.productRepository.findBy({ taxId, isDeleted: 0 });
   }
 
   async findAll(query: QueryFilter, parentCategoryId: number = -1) {
@@ -112,6 +118,54 @@ export class ProductService {
 
   findOne(id: number) {
     return this.productRepository.findOneBy({ id, isDeleted: 0 });
+  }
+
+  async findOneWithQuantity(id: number) {
+    return this.productRepository
+      .createQueryBuilder('product')
+      .where('product.id = :id', { id })
+      .andWhere('product.isDeleted = 0')
+      .leftJoin('product.textContent', 'textContent')
+
+      .leftJoin('product.productUnits', 'productUnits')
+      .leftJoin('productUnits.textContent', 'productUnitsTextContent')
+      .select([
+        'product.id',
+        'textContent.id',
+        'textContent.code',
+        'textContent.originalText',
+        'productUnits.id',
+        'productUnits.quantity',
+        'productUnitsTextContent',
+      ])
+      .getOne();
+  }
+
+  findOneWithSimpleRelationsForUpdating(id: number) {
+    return this.productRepository
+      .createQueryBuilder('product')
+      .where('product.id = :id', { id })
+      .andWhere('product.isDeleted = 0')
+      .leftJoin('product.category', 'category')
+      .leftJoin('category.textContent', 'categoryTextContent')
+      .leftJoin('product.textContent', 'textContent')
+      .leftJoin('textContent.translations', 'translations')
+      .select([
+        'product.id',
+        'product.image',
+        'product.barCode',
+        'product.parentCategoryId',
+        'category.id',
+        'category.image',
+        'categoryTextContent',
+        'textContent.id',
+        'textContent.code',
+        'textContent.originalText',
+        'translations.id',
+        'translations.code',
+        'translations.translation',
+      ])
+      .getOne();
   }
 
   async findOneWithRelations(id: number, language: LanguageQuery) {
@@ -232,8 +286,131 @@ export class ProductService {
     return { products: translatedProducts, count: totalCount };
   }
 
-  update(id: number, updateProductDto: UpdateProductDto) {
-    return `This action updates a #${id} product`;
+  findOneWithTaxRelationsForUpdating(id: number) {
+    return this.productRepository
+      .createQueryBuilder('product')
+      .where('product.id = :id', { id })
+      .andWhere('product.isDeleted = 0')
+      .leftJoin('product.textContent', 'textContent')
+      .leftJoin('product.tax', 'tax')
+      .leftJoin('tax.textContent', 'taxTextContent')
+      .select([
+        'product.id',
+        'textContent.id',
+        'textContent.code',
+        'textContent.originalText',
+        'tax.id',
+        'tax.percent',
+        'taxTextContent',
+      ])
+      .getOne();
+  }
+
+  findOneWithComplexRelationsForUpdating(id: number) {
+    return this.productRepository
+      .createQueryBuilder('product')
+      .where('product.id = :id', { id })
+      .andWhere('product.isDeleted = 0')
+      .leftJoin('product.textContent', 'textContent')
+      .leftJoin('product.productUnits', 'productUnits')
+      .andWhere('productUnits.isDeleted = 0')
+      .leftJoin('productUnits.textContent', 'productUnitsTextContent')
+      .leftJoin(
+        'productUnitsTextContent.translations',
+        'productUnitsTranslations',
+      )
+      .leftJoin('productUnits.unit', 'unit')
+      .leftJoin('unit.textContent', 'unitTextContent')
+      .select([
+        'product.id',
+        'textContent.id',
+        'textContent.code',
+        'textContent.originalText',
+        'productUnits.id',
+        'productUnits.price',
+        'unit',
+        'unitTextContent',
+        'productUnitsTextContent',
+        'productUnitsTranslations',
+      ])
+      .getOne();
+  }
+
+  // async complexUpdate(id: number) {
+  //   const productUnits = await this.productRepository
+  //     .createQueryBuilder('product')
+  //     .where('product.id = :id', { id })
+  //     .andWhere('product.isDeleted = 0')
+  //     .leftJoin('product.productUnits', 'productUnits')
+  //     .leftJoin('productUnits.textContent', 'productUnitsTextContent')
+  //     .leftJoin(
+  //       'productUnitsTextContent.translations',
+  //       'productUnitsTranslations',
+  //     )
+  //     .select([
+  //       'product.id',
+  //       'productUnits.id',
+  //       'productUnits.price',
+  //       'productUnits.unitId',
+  //       'productUnitsTextContent',
+  //       'productUnitsTranslations',
+  //     ])
+  //     .getOne();
+
+  //   return productUnits;
+  // }
+
+  async updateProductTax(productId: number, taxIdDto: TaxIdDto) {
+    const { id, ...product } = await this.findOne(productId);
+    const newTaxId = taxIdDto.taxId;
+
+    const cratedNewProduct = this.productRepository.create({
+      ...product,
+      taxId: newTaxId,
+    });
+
+    const savedNewProduct = await this.productRepository.save(cratedNewProduct);
+
+    const productUnits = await this.productUnitRepository.findBy({
+      productId,
+      isDeleted: 0,
+    });
+
+    productUnits.forEach(
+      (productUnit) => (productUnit.productId = +savedNewProduct.id),
+    );
+
+    await this.productUnitRepository.save(productUnits);
+
+    product.isDeleted = 1;
+    await this.productRepository.save({ id, ...product });
+
+    return { message: 'Product updated successfully' };
+  }
+
+  async updateQuantity(
+    id: number,
+    updateProductQuantityDtoList: UpdateProductQuantityDto[],
+  ) {
+    const productUnits = await this.productUnitRepository
+      .createQueryBuilder('productUnits')
+      .where('productUnits.productId = :id', { id })
+      .andWhere('productUnits.isDeleted = 0')
+      .select(['productUnits.id', 'productUnits.quantity'])
+      .getMany();
+
+    if (updateProductQuantityDtoList.length > 0) {
+      for (const updateProductUnit of updateProductQuantityDtoList) {
+        const { id, quantity } = updateProductUnit;
+
+        const existingProductUnit = productUnits.find((p) => p.id === id);
+
+        if (existingProductUnit) {
+          existingProductUnit.quantity = quantity;
+        }
+      }
+    }
+    return this.productUnitRepository.save(productUnits);
   }
 
   async remove(id: number) {

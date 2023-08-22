@@ -5,12 +5,17 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Tax } from './entities/tax.entity';
 import { Repository } from 'typeorm';
 import { TextContent } from '../text-content/entities/text-content.entity';
+import { ProductService } from '../product/product.service';
+import { Product } from '../product/entities/product.entity';
 
 @Injectable()
 export class TaxService {
   constructor(
     @InjectRepository(Tax)
     private readonly taxRepository: Repository<Tax>,
+    private readonly productService: ProductService,
+    @InjectRepository(Product)
+    private readonly productRepository: Repository<Product>,
   ) {}
   create(createTaxDto: CreateTaxDto, textContent: TextContent) {
     const tax = this.taxRepository.create(createTaxDto);
@@ -80,7 +85,16 @@ export class TaxService {
       textContentId: tax.textContentId,
     });
 
-    return this.taxRepository.save(newTax);
+    const newTaxSaved = await this.taxRepository.save(newTax);
+
+    const products = await this.productService.findByTaxId(id);
+
+    for (const product of products) {
+      product.taxId = newTax.id;
+    }
+    await this.productRepository.save(products);
+
+    return newTaxSaved;
   }
 
   async remove(id: number) {

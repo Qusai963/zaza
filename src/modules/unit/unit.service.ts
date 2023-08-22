@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { UpdateUnitDto } from './dto/update-unit.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Unit } from './entities/unit.entity';
 import { Repository } from 'typeorm';
@@ -74,10 +73,6 @@ export class UnitService {
       textContentId: unit.textContentId,
       translatedText: translatedText || unit.textContent.originalText,
     };
-  }
-
-  update(id: number, updateUnitDto: UpdateUnitDto) {
-    return `This action updates a #${id} unit`;
   }
 
   async remove(id: number) {

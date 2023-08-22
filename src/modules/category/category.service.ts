@@ -137,8 +137,9 @@ export class CategoryService {
 
     if (numberOfProducts > 0)
       return {
-        type: category.typeName,
+        typeName: category.typeName,
         id: category.id,
+        parentCategoryId: category.parentCategoryId,
         productsNumber: category.productsNumber,
         image: category.image,
         translatedText: translatedTextForMainCategory,

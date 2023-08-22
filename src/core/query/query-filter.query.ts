@@ -39,6 +39,7 @@ export class QueryFilter {
     type: String,
     enum: ['newest', 'oldest'],
     required: false,
+    default: 'newest',
   })
   sort: string;
 }

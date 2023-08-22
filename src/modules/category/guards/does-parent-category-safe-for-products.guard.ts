@@ -7,8 +7,6 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { REQUEST } from '@nestjs/core';
-import { Request } from 'express';
 import { Category } from '../entities/category.entity';
 import { Repository } from 'typeorm';
 import { CATEGORY_NOT_FOUND } from 'src/core/error/messages/category-not-found.message';
@@ -22,13 +20,12 @@ export class DoesCategorySafeForProductsGuard implements CanActivate {
     @InjectRepository(Category)
     private readonly categoryRepository: Repository<Category>,
     private readonly categoryService: CategoryService,
-    @Inject(REQUEST) private request: Request,
   ) {}
   async canActivate(context: ExecutionContext) {
     const ctx = context.switchToHttp();
     const request = ctx.getRequest();
     const parentCategoryId = request.body.product.parentCategoryId;
-    const language = getLanguageFromRequest(this.request);
+    const language = getLanguageFromRequest(request);
     const category = await this.categoryService.findOne(+parentCategoryId);
 
     if (!category)

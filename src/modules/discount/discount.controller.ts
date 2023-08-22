@@ -15,7 +15,8 @@ import { UpdateDiscountDto } from './dto/update-discount.dto';
 import { AuthGuard } from '../auth/guards/auth.guard';
 import { IsAdminGuard } from '../auth/guards/is-admin.guard';
 import { AreProductsExistGuard } from '../product/guards/are-products-exist.guard';
-import { Pagination } from 'src/core/query/pagination.query';
+import { QueryFilter } from 'src/core/query/query-filter.query';
+import { DoesDiscountExistGuard } from './guards/does-discount-exist.guard';
 
 @Controller('discount')
 export class DiscountController {
@@ -31,15 +32,11 @@ export class DiscountController {
 
   @UseGuards(AuthGuard)
   @Get()
-  findAll(@Query() query: Pagination) {
+  findAll(@Query() query: QueryFilter) {
     return this.discountService.findAll(query);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.discountService.findOne(+id);
-  }
-
+  @UseGuards(AuthGuard, IsAdminGuard, DoesDiscountExistGuard)
   @Patch(':id')
   update(
     @Param('id') id: string,
@@ -48,6 +45,7 @@ export class DiscountController {
     return this.discountService.update(+id, updateDiscountDto);
   }
 
+  @UseGuards(AuthGuard, IsAdminGuard, DoesDiscountExistGuard)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.discountService.remove(+id);

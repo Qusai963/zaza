@@ -7,10 +7,37 @@ import { TextContentService } from '../text-content/text-content.service';
 import { TranslationService } from '../translation/translation.service';
 import { TextContent } from '../text-content/entities/text-content.entity';
 import { Translation } from '../translation/entities/translation.entity';
+import { Product } from '../product/entities/product.entity';
+import { ProductService } from '../product/product.service';
+import { JwtService } from '@nestjs/jwt';
+import { UserService } from '../user/user.service';
+import { User } from '../user/entities/user.entity';
+import { LanguageService } from '../language/language.service';
+import { Language } from '../language/entities/language.entity';
+import { UnitModule } from '../unit/unit.module';
+import { Unit } from '../unit/entities/unit.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([ProductUnit, TextContent, Translation])],
+  imports: [
+    TypeOrmModule.forFeature([
+      ProductUnit,
+      TextContent,
+      Translation,
+      Product,
+      User,
+      Language,
+      Unit,
+    ]),
+  ],
   controllers: [ProductUnitController],
-  providers: [ProductUnitService, TextContentService, TranslationService],
+  providers: [
+    ProductUnitService,
+    TextContentService,
+    TranslationService,
+    ProductService,
+    JwtService,
+    UserService,
+    LanguageService,
+  ],
 })
 export class ProductUnitModule {}

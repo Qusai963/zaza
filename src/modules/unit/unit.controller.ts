@@ -68,21 +68,13 @@ export class UnitController {
   @UseGuards(AuthGuard, IsAdminGuard)
   @Get()
   findAll(@Query('language') code: string) {
-    try {
-      return this.unitService.findAll(code);
-    } catch (error) {
-      catchingError(this.request, error);
-    }
+    return this.unitService.findAll(code);
   }
 
   @UseGuards(AuthGuard, IsAdminGuard)
   @Get(':id')
   findOne(@Param('id') id: string, @Query('language') code: string) {
-    try {
-      return this.unitService.findByCode(+id, code);
-    } catch (error) {
-      catchingError(this.request, error);
-    }
+    return this.unitService.findByCode(+id, code);
   }
 
   @UseGuards(AuthGuard, IsAdminGuard, DoesUnitExistGuard)
@@ -93,31 +85,23 @@ export class UnitController {
     @Body('translation')
     updateSecondTranslationDtoList: UpdateSecondTranslationDtoList[],
   ) {
-    try {
-      const unit = await this.unitService.findOne(+id);
-      const textContentId = unit.textContentId;
-      const updatedTextContent = await this.textContentService.update(
-        +textContentId,
-        updateTextContentDto,
-      );
+    const unit = await this.unitService.findOne(+id);
+    const textContentId = unit.textContentId;
+    const updatedTextContent = await this.textContentService.update(
+      +textContentId,
+      updateTextContentDto,
+    );
 
-      const updatedTranslation = await this.translationService.update(
-        textContentId,
-        updateSecondTranslationDtoList,
-      );
-      return unit;
-    } catch (error) {
-      catchingError(this.request, error);
-    }
+    const updatedTranslation = await this.translationService.update(
+      textContentId,
+      updateSecondTranslationDtoList,
+    );
+    return unit;
   }
 
   @UseGuards(AuthGuard, IsAdminGuard, DoesUnitExistGuard)
   @Delete(':id')
   remove(@Param('id') id: string) {
-    try {
-      return this.unitService.remove(+id);
-    } catch (error) {
-      catchingError(this.request, error);
-    }
+    return this.unitService.remove(+id);
   }
 }

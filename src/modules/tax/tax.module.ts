@@ -12,10 +12,21 @@ import { Language } from '../language/entities/language.entity';
 import { UserService } from '../user/user.service';
 import { User } from '../user/entities/user.entity';
 import { JwtService } from '@nestjs/jwt';
+import { Product } from '../product/entities/product.entity';
+import { ProductService } from '../product/product.service';
+import { ProductUnit } from '../product-unit/entities/product-unit.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Tax, TextContent, Translation, Language, User]),
+    TypeOrmModule.forFeature([
+      Tax,
+      TextContent,
+      Translation,
+      Language,
+      User,
+      Product,
+      ProductUnit,
+    ]),
   ],
   controllers: [TaxController],
   providers: [
@@ -25,6 +36,7 @@ import { JwtService } from '@nestjs/jwt';
     LanguageService,
     UserService,
     JwtService,
+    ProductService,
   ],
 })
 export class TaxModule {}

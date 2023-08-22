@@ -54,19 +54,30 @@ export class ProductUnitService {
     return createdProductUnits;
   }
 
-  findAll() {
-    return `This action returns all productUnit`;
-  }
-
   findOne(id: number) {
-    return `This action returns a #${id} productUnit`;
+    return this.productUnitRepository.findOneBy({ id, isDeleted: 0 });
   }
 
-  update(id: number, updateProductUnitDto: UpdateProductUnitDto) {
-    return `This action updates a #${id} productUnit`;
+  async update(
+    productUnitId: number,
+    updateProductUnitDto: UpdateProductUnitDto,
+  ) {
+    const productUnit = await this.findOne(productUnitId);
+    let price = productUnit.price;
+    if (updateProductUnitDto[0].price) price = updateProductUnitDto[0].price;
+    let unitId = productUnit.unitId;
+    if (updateProductUnitDto[0].unitId) unitId = updateProductUnitDto[0].unitId;
+
+    return this.productUnitRepository.save({
+      ...productUnit,
+      unitId,
+      price,
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} productUnit`;
+  async remove(productUnitId: number) {
+    const productUnit = await this.findOne(productUnitId);
+    productUnit.isDeleted = 1;
+    return this.productUnitRepository.save(productUnit);
   }
 }

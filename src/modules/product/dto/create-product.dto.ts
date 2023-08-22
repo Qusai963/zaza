@@ -8,11 +8,6 @@ import {
 
 export class CreateProductDto {
   @IsOptional()
-  @IsNumber()
-  @Min(0)
-  readonly price: number;
-
-  @IsOptional()
   @IsString()
   readonly barcode: string;
 
