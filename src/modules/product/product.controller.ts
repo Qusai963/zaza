@@ -134,18 +134,9 @@ export class ProductController {
 
   @UseGuards(AuthGuard, IsAdminGuard, DoesProductExistGuard)
   @Get('findOneWithComplexRelationsForUpdating/:id')
-  findOneWithComplexRelationsForUpdating(
-    @Param('id') id: string,
-    @Body('productUnit') createProductUnitDto: CreateProductUnitDto[],
-  ) {
+  findOneWithComplexRelationsForUpdating(@Param('id') id: string) {
     return this.productService.findOneWithComplexRelationsForUpdating(+id);
   }
-
-  // @UseGuards(AuthGuard, IsAdminGuard, DoesProductExistGuard)
-  // @Patch('complexUpdate/:id')
-  // complexUpdate(@Param('id') id: string) {
-  //   return this.productService.complexUpdate(+id);
-  // }
 
   @UseGuards(AuthGuard, IsAdminGuard, DoesProductExistGuard)
   @Get('findOneWithQuantity/:id')

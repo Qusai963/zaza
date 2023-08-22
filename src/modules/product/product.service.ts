@@ -336,30 +336,6 @@ export class ProductService {
       .getOne();
   }
 
-  // async complexUpdate(id: number) {
-  //   const productUnits = await this.productRepository
-  //     .createQueryBuilder('product')
-  //     .where('product.id = :id', { id })
-  //     .andWhere('product.isDeleted = 0')
-  //     .leftJoin('product.productUnits', 'productUnits')
-  //     .leftJoin('productUnits.textContent', 'productUnitsTextContent')
-  //     .leftJoin(
-  //       'productUnitsTextContent.translations',
-  //       'productUnitsTranslations',
-  //     )
-  //     .select([
-  //       'product.id',
-  //       'productUnits.id',
-  //       'productUnits.price',
-  //       'productUnits.unitId',
-  //       'productUnitsTextContent',
-  //       'productUnitsTranslations',
-  //     ])
-  //     .getOne();
-
-  //   return productUnits;
-  // }
-
   async updateProductTax(productId: number, taxIdDto: TaxIdDto) {
     const { id, ...product } = await this.findOne(productId);
     const newTaxId = taxIdDto.taxId;
