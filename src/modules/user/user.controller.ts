@@ -49,15 +49,15 @@ export class UserController {
     return this.userService.findOne(+id);
   }
 
-  @UseGuards(AuthGuard, IsAdminGuard, UserNotFoundGuard)
-  @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() updateUserDto: UpdateUserDto,
-    @Query() language: LanguageQuery,
-  ) {
-    return this.userService.update(+id, updateUserDto, language);
-  }
+  // @UseGuards(AuthGuard, IsAdminGuard, UserNotFoundGuard)
+  // @Patch(':id')
+  // update(
+  //   @Param('id') id: string,
+  //   @Body() updateUserDto: UpdateUserDto,
+  //   @Query() language: LanguageQuery,
+  // ) {
+  //   return this.userService.update(+id, updateUserDto, language);
+  // }
 
   @UseGuards(AuthGuard, IsAdminGuard, UserNotFoundGuard)
   @Delete(':id')

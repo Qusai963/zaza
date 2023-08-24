@@ -48,32 +48,32 @@ export class UserService {
     });
   }
 
-  async update(
-    id: number,
-    updateUserDto: UpdateUserDto,
-    language: LanguageQuery,
-  ) {
-    const user = await this.findById(id);
-    let email;
-    let userName;
-    if (updateUserDto.email) {
-      email = await this.findByEmail(updateUserDto.email);
-      if (email) {
-        throw new ForbiddenException(
-          EMAIL_EXISTS.getMessage(language.language),
-        );
-      }
-    }
-    if (updateUserDto.userName) {
-      userName = await this.findByUserName(updateUserDto.userName);
-      if (userName) {
-        throw new ForbiddenException(
-          USER_NAME_EXISTS.getMessage(language.language),
-        );
-      }
-    }
-    return this.userRepository.save({ ...user, ...updateUserDto });
-  }
+  // async update(
+  //   id: number,
+  //   updateUserDto: UpdateUserDto,
+  //   language: LanguageQuery,
+  // ) {
+  //   const user = await this.findById(id);
+  //   let email;
+  //   let userName;
+  //   if (updateUserDto.email) {
+  //     email = await this.findByEmail(updateUserDto.email);
+  //     if (email) {
+  //       throw new ForbiddenException(
+  //         EMAIL_EXISTS.getMessage(language.language),
+  //       );
+  //     }
+  //   }
+  //   if (updateUserDto.userName) {
+  //     userName = await this.findByUserName(updateUserDto.userName);
+  //     if (userName) {
+  //       throw new ForbiddenException(
+  //         USER_NAME_EXISTS.getMessage(language.language),
+  //       );
+  //     }
+  //   }
+  //   return this.userRepository.save({ ...user, ...updateUserDto });
+  // }
 
   async remove(id: number) {
     const user = await this.findById(id);

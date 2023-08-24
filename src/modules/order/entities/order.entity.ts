@@ -17,7 +17,7 @@ export class Order {
   id: number;
 
   @Column()
-  userId: string;
+  userId: number;
 
   @CreateDateColumn()
   createdAt: Date;

@@ -18,6 +18,8 @@ export class ProductOrder {
   @ManyToOne(() => ProductUnit, (ProductUnit) => ProductUnit.productOrders)
   productUnit: ProductUnit;
 
-  @ManyToOne(() => Order, (order) => order.productOrders)
+  @ManyToOne(() => Order, (order) => order.productOrders, {
+    onDelete: 'CASCADE',
+  })
   order: Order;
 }

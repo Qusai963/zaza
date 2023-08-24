@@ -1,15 +1,65 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { ProductOrder } from 'src/modules/product-order/entities/product-order.entity';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  Req,
+} from '@nestjs/common';
 import { OrderService } from './order.service';
-import { CreateOrderDto } from './dto/create-order.dto';
-import { UpdateOrderDto } from './dto/update-order.dto';
+import { AuthGuard } from '../auth/guards/auth.guard';
+import { ProductOrderService } from '../product-order/product-order.service';
+import { getUserId } from '../user/helper/get-user-id.helper';
+import { Request } from 'express';
+import { CreateProductOrderDto } from '../product-order/dto/create-product-order.dto';
+import { ValidProductUnitsGuard } from '../product-unit/guards/valid-product-units.guard';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Order } from './entities/order.entity';
 
 @Controller('order')
 export class OrderController {
-  constructor(private readonly orderService: OrderService) {}
+  constructor(
+    private readonly orderService: OrderService,
+    private readonly productOrderService: ProductOrderService,
+    @InjectRepository(ProductOrder)
+    private readonly productOrderRepository: Repository<ProductOrder>,
+    @InjectRepository(Order)
+    private readonly orderRepository: Repository<Order>,
+  ) {}
 
+  @UseGuards(AuthGuard, ValidProductUnitsGuard)
   @Post()
-  create(@Body() createOrderDto: CreateOrderDto) {
-    return this.orderService.create(createOrderDto);
+  async create(
+    @Body() createProductOrderDtoList: CreateProductOrderDto[],
+    @Req() req: Request,
+  ) {
+    const userId = getUserId(req);
+    const order = await this.orderService.create(userId);
+
+    const productOrders = await this.productOrderService.create(
+      createProductOrderDtoList,
+      order.id,
+    );
+    const productOrderIds: number[] = [];
+    productOrders.forEach((productOrder) => {
+      productOrderIds.push(productOrder.id);
+    });
+
+    const calcTotalPrice = await this.productOrderRepository
+      .createQueryBuilder('productOrder')
+      .leftJoinAndSelect('productOrder.productUnit', 'productUnit')
+      .where('productOrder.id IN (:...productOrderIds)', { productOrderIds }) // Use spread operator for array
+      .select('SUM(productOrder.amount * productUnit.price)', 'totalPrice') // Closing parenthesis added
+      .getRawOne(); // Use getRawOne() to get a single result as an object
+
+    order.totalPrice = calcTotalPrice.totalPrice;
+
+    return this.orderRepository.save(order);
   }
 
   @Get()
@@ -20,11 +70,6 @@ export class OrderController {
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.orderService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateOrderDto: UpdateOrderDto) {
-    return this.orderService.update(+id, updateOrderDto);
   }
 
   @Delete(':id')
