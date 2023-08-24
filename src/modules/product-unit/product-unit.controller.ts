@@ -87,4 +87,10 @@ export class ProductUnitController {
   remove(@Param('productUnitId') id: string) {
     return this.productUnitService.remove(+id);
   }
+
+  @UseGuards(AuthGuard, IsAdminGuard, DoesProductExistGuard)
+  @Get('findByProductId/:id')
+  findByProductId(@Param('id') id: string) {
+    return this.productUnitService.findByProductId(+id);
+  }
 }

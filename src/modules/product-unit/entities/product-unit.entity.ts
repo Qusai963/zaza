@@ -1,7 +1,14 @@
+import { ProductOrder } from 'src/modules/product-order/entities/product-order.entity';
 import { Product } from 'src/modules/product/entities/product.entity';
 import { TextContent } from 'src/modules/text-content/entities/text-content.entity';
 import { Unit } from 'src/modules/unit/entities/unit.entity';
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity()
 export class ProductUnit {
@@ -36,4 +43,7 @@ export class ProductUnit {
     onDelete: 'CASCADE',
   })
   textContent: TextContent;
+
+  @OneToMany(() => ProductOrder, (productOrder) => productOrder.productUnit)
+  productOrders: ProductOrder[];
 }

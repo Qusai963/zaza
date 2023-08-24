@@ -70,9 +70,6 @@ export class Product {
   // )
   // favoriteProducts: FavoriteProduct[];
 
-  @OneToMany(() => ProductOrder, (productOrder) => productOrder.product)
-  productOrders: ProductOrder[];
-
   @OneToMany(() => Discount, (discount) => discount.product)
   discounts: Discount[];
 

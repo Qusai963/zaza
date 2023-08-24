@@ -15,10 +15,6 @@ export class ProductUnitService {
     private readonly textContentService: TextContentService,
     private readonly translationService: TranslationService,
   ) {}
-  create(createProductUnitDto: CreateProductUnitDto) {
-    return 'This action adds a new productUnit';
-  }
-
   async createMany(
     createProductUnitDto: CreateProductUnitDto[],
     productId: number,
@@ -79,5 +75,12 @@ export class ProductUnitService {
     const productUnit = await this.findOne(productUnitId);
     productUnit.isDeleted = 1;
     return this.productUnitRepository.save(productUnit);
+  }
+
+  findByProductId(productId: number) {
+    return this.productUnitRepository.find({
+      where: { productId, isDeleted: 0 },
+      relations: ['textContent', 'textContent.translations'],
+    });
   }
 }

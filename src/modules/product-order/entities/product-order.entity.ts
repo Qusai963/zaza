@@ -1,5 +1,5 @@
 import { Order } from 'src/modules/order/entities/order.entity';
-import { Product } from 'src/modules/product/entities/product.entity';
+import { ProductUnit } from 'src/modules/product-unit/entities/product-unit.entity';
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 @Entity()
 export class ProductOrder {
@@ -7,7 +7,7 @@ export class ProductOrder {
   id: number;
 
   @Column()
-  productId: number;
+  productUnitId: number;
 
   @Column()
   orderId: number;
@@ -15,8 +15,8 @@ export class ProductOrder {
   @Column()
   amount: number;
 
-  @ManyToOne(() => Product, (product) => product.productOrders)
-  product: Product;
+  @ManyToOne(() => ProductUnit, (ProductUnit) => ProductUnit.productOrders)
+  productUnit: ProductUnit;
 
   @ManyToOne(() => Order, (order) => order.productOrders)
   order: Order;
