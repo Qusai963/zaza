@@ -8,6 +8,8 @@ import {
   Param,
   Delete,
   Inject,
+  UseGuards,
+  Query,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -15,6 +17,12 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { catchingError } from 'src/core/error/helper/catching-error';
 import { Request } from 'express';
 import { ApiTags } from '@nestjs/swagger';
+import { AuthGuard } from '../auth/guards/auth.guard';
+import { IsAdminGuard } from '../auth/guards/is-admin.guard';
+import { PaginationWithSearch } from 'src/core/query/pagination-with-search.query';
+import { UserNotFoundGuard } from './guards/user-not-found.guard';
+import { DoesUserExistGuard } from './guards/does-user-exist.guard';
+import { LanguageQuery } from 'src/core/query/language.query';
 
 @ApiTags('user')
 @Controller('user')
@@ -29,25 +37,29 @@ export class UserController {
     return this.userService.create(createUserDto);
   }
 
+  @UseGuards(AuthGuard, IsAdminGuard)
   @Get()
-  findAll() {
-    try {
-      return this.userService.findAll();
-    } catch (error) {
-      catchingError(error, this.request);
-    }
+  findAll(@Query() query: PaginationWithSearch) {
+    return this.userService.findAll(query);
   }
 
+  @UseGuards(AuthGuard, IsAdminGuard, UserNotFoundGuard)
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.userService.findOne(+id);
   }
 
+  @UseGuards(AuthGuard, IsAdminGuard, UserNotFoundGuard)
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.userService.update(+id, updateUserDto);
+  update(
+    @Param('id') id: string,
+    @Body() updateUserDto: UpdateUserDto,
+    @Query() language: LanguageQuery,
+  ) {
+    return this.userService.update(+id, updateUserDto, language);
   }
 
+  @UseGuards(AuthGuard, IsAdminGuard, UserNotFoundGuard)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.userService.remove(+id);

@@ -14,6 +14,8 @@ export class Phone {
   @Column()
   userId: number;
 
-  @ManyToOne(() => User, (user) => user.phones)
+  @ManyToOne(() => User, (user) => user.phones, {
+    onDelete: 'CASCADE',
+  })
   user: User;
 }

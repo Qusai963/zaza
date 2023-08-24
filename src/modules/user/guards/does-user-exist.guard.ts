@@ -23,7 +23,6 @@ export class DoesUserExistGuard implements CanActivate {
 
   async validateRequest(request) {
     const language = getLanguageFromRequest(request);
-
     const userName = await this.userService.findByUserName(
       request.body.userName,
     );

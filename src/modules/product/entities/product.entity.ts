@@ -49,6 +49,8 @@ export class Product {
 
   @ManyToOne(() => Category, (category) => category.products, {
     onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+    cascade: true,
   })
   @JoinColumn({ name: 'parent_category_id' })
   category: Category;
@@ -68,8 +70,8 @@ export class Product {
   // )
   // favoriteProducts: FavoriteProduct[];
 
-  // @OneToMany(() => ProductOrder, (productOrder) => productOrder.product)
-  // productOrders: ProductOrder[];
+  @OneToMany(() => ProductOrder, (productOrder) => productOrder.product)
+  productOrders: ProductOrder[];
 
   @OneToMany(() => Discount, (discount) => discount.product)
   discounts: Discount[];

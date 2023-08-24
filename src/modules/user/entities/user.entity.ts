@@ -9,6 +9,7 @@ import {
   Column,
   OneToMany,
   OneToOne,
+  CreateDateColumn,
 } from 'typeorm';
 
 @Entity('users')
@@ -28,14 +29,17 @@ export class User {
   @Column({ unique: true })
   email: string;
 
+  @CreateDateColumn()
+  createdAt: Date;
+
   // @OneToMany(
   //   () => DiscountSpecificUser,
   //   (discountSpecificUser) => discountSpecificUser.user,
   // )
   // discountSpecificUsers: DiscountSpecificUser[];
 
-  // @OneToMany(() => Order, (order) => order.user)
-  // orders: Order[];
+  @OneToMany(() => Order, (order) => order.user)
+  orders: Order[];
 
   @OneToMany(() => Phone, (phone) => phone.user)
   phones: Phone[];

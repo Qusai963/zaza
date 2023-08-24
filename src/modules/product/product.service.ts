@@ -12,12 +12,16 @@ import { LanguageQuery } from 'src/core/query/language.query';
 import { ProductUnit } from '../product-unit/entities/product-unit.entity';
 import { UpdateProductQuantityDto } from './dto/update-product-quantity.dto';
 import { TaxIdDto } from './dto/taxId-dto';
+import { CategoryTypeEnum } from '../category/constants/category-enum';
+import { Category } from '../category/entities/category.entity';
 
 @Injectable()
 export class ProductService {
   constructor(
     @InjectRepository(Product)
     private readonly productRepository: Repository<Product>,
+    @InjectRepository(Category)
+    private readonly categoryRepository: Repository<Category>,
     @InjectRepository(ProductUnit)
     private readonly productUnitRepository: Repository<ProductUnit>,
   ) {}
@@ -105,6 +109,7 @@ export class ProductService {
         image: product.image,
         parentCategoryId: product.parentCategoryId,
         discount: discounts ? discounts.percent : 0,
+        discountId: discounts ? discounts.id : null,
         translatedText: translatedText || product.textContent.originalText,
         translatedProductUnits,
       };
@@ -244,6 +249,7 @@ export class ProductService {
       image: product.image,
       parentCategoryId: product.parentCategoryId,
       discount: discounts ? discounts.percent : 0,
+      discountId: discounts ? discounts.id : null,
       translatedText: translatedText || product.textContent.originalText,
       translatedProductUnits,
       translatedTaxPercent,
@@ -392,9 +398,19 @@ export class ProductService {
   async remove(id: number) {
     const product = await this.productRepository.findOne({
       where: { id },
-      relations: { productUnits: true },
+      relations: { productUnits: true, category: true },
     });
     product.isDeleted = 1;
-    return this.productRepository.save(product);
+    const savedProduct = await this.productRepository.save(product);
+
+    const anotherProduct = await this.productRepository.findOne({
+      where: { parentCategoryId: product.parentCategoryId, isDeleted: 0 },
+    });
+    if (!anotherProduct) {
+      product.category.typeName = CategoryTypeEnum.UNKNOWN;
+      await this.categoryRepository.save(product.category);
+    }
+
+    return savedProduct;
   }
 }

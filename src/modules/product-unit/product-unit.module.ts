@@ -14,8 +14,8 @@ import { UserService } from '../user/user.service';
 import { User } from '../user/entities/user.entity';
 import { LanguageService } from '../language/language.service';
 import { Language } from '../language/entities/language.entity';
-import { UnitModule } from '../unit/unit.module';
 import { Unit } from '../unit/entities/unit.entity';
+import { Category } from '../category/entities/category.entity';
 
 @Module({
   imports: [
@@ -27,6 +27,7 @@ import { Unit } from '../unit/entities/unit.entity';
       User,
       Language,
       Unit,
+      Category,
     ]),
   ],
   controllers: [ProductUnitController],

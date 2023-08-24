@@ -1,6 +1,15 @@
 import { ProductOrder } from 'src/modules/product-order/entities/product-order.entity';
 import { User } from 'src/modules/user/entities/user.entity';
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  OneToMany,
+  CreateDateColumn,
+  UpdateDateColumn,
+  JoinColumn,
+} from 'typeorm';
 
 @Entity()
 export class Order {
@@ -8,7 +17,7 @@ export class Order {
   id: number;
 
   @Column()
-  userName: string;
+  userId: string;
 
   @CreateDateColumn()
   createdAt: Date;
@@ -22,9 +31,11 @@ export class Order {
   @Column()
   totalPrice: number;
 
-  // @ManyToOne(() => User, user => user.orders)
-  // user: User;
+  @ManyToOne(() => User, (user) => user.orders, {
+    onDelete: 'CASCADE',
+  })
+  user: User;
 
-  // @OneToMany(() => ProductOrder, productOrder => productOrder.order)
-  // productOrders: ProductOrder[];
+  @OneToMany(() => ProductOrder, (productOrder) => productOrder.order)
+  productOrders: ProductOrder[];
 }

@@ -9,9 +9,12 @@ import { User } from '../user/entities/user.entity';
 import { ProductService } from '../product/product.service';
 import { Product } from '../product/entities/product.entity';
 import { ProductUnit } from '../product-unit/entities/product-unit.entity';
+import { Category } from '../category/entities/category.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Discount, User, Product, ProductUnit])],
+  imports: [
+    TypeOrmModule.forFeature([Discount, User, Product, ProductUnit, Category]),
+  ],
   controllers: [DiscountController],
   providers: [DiscountService, JwtService, UserService, ProductService],
 })

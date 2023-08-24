@@ -127,6 +127,7 @@ export class DiscountService {
         image: product.image,
         parentCategoryId: product.parentCategoryId,
         discount: discounts ? discounts.percent : 0,
+        discountId: discounts ? discounts.id : null,
         translatedText: translatedText || product.textContent.originalText,
         translatedProductUnits,
       };
