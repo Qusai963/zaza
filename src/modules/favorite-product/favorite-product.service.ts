@@ -1,26 +1,36 @@
 import { Injectable } from '@nestjs/common';
-import { CreateFavoriteProductDto } from './dto/create-favorite-product.dto';
-import { UpdateFavoriteProductDto } from './dto/update-favorite-product.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { FavoriteProduct } from './entities/favorite-product.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class FavoriteProductService {
-  create(createFavoriteProductDto: CreateFavoriteProductDto) {
-    return 'This action adds a new favoriteProduct';
+  constructor(
+    @InjectRepository(FavoriteProduct)
+    private readonly favoriteProductRepository: Repository<FavoriteProduct>,
+  ) {}
+  async create(userId: number, productId: number) {
+    const favorite = await this.findOneByUserAndProduct(userId, productId);
+
+    if (favorite) return this.favoriteProductRepository.remove(favorite);
+
+    if (!favorite) {
+      const newFavorite = this.favoriteProductRepository.create({
+        userId,
+        productId,
+      });
+
+      return this.favoriteProductRepository.save(newFavorite);
+    }
   }
 
-  findAll() {
-    return `This action returns all favoriteProduct`;
-  }
+  // TODO
+  findAllByUserId(userId: number) {}
 
-  findOne(id: number) {
-    return `This action returns a #${id} favoriteProduct`;
-  }
-
-  update(id: number, updateFavoriteProductDto: UpdateFavoriteProductDto) {
-    return `This action updates a #${id} favoriteProduct`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} favoriteProduct`;
+  findOneByUserAndProduct(userId: number, productId: number) {
+    return this.favoriteProductRepository.findOneBy({
+      userId,
+      productId,
+    });
   }
 }
