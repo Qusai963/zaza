@@ -16,6 +16,7 @@ import { LanguageService } from '../language/language.service';
 import { Language } from '../language/entities/language.entity';
 import { Unit } from '../unit/entities/unit.entity';
 import { Category } from '../category/entities/category.entity';
+import { Discount } from '../discount/entities/discount.entity';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { Category } from '../category/entities/category.entity';
       Language,
       Unit,
       Category,
+      Discount,
     ]),
   ],
   controllers: [ProductUnitController],

@@ -64,20 +64,20 @@ export class Product {
   @JoinColumn()
   tax: Tax;
 
-  // @OneToMany(
-  //   () => FavoriteProduct,
-  //   (favoriteProduct) => favoriteProduct.product,
-  // )
-  // favoriteProducts: FavoriteProduct[];
+  @OneToMany(
+    () => FavoriteProduct,
+    (favoriteProduct) => favoriteProduct.product,
+  )
+  favoriteProducts: FavoriteProduct[];
 
   @OneToMany(() => Discount, (discount) => discount.product)
   discounts: Discount[];
 
-  // @OneToMany(
-  //   () => DiscountSpecificUser,
-  //   (discountSpecificUser) => discountSpecificUser.product,
-  // )
-  // discountSpecificUsers: DiscountSpecificUser[];
+  @OneToMany(
+    () => DiscountSpecificUser,
+    (discountSpecificUser) => discountSpecificUser.product,
+  )
+  discountSpecificUsers: DiscountSpecificUser[];
 
   @OneToMany(() => ProductUnit, (productUnit) => productUnit.product)
   productUnits: ProductUnit[];

@@ -1,6 +1,5 @@
 import { InjectRepository } from '@nestjs/typeorm';
 import { Injectable } from '@nestjs/common';
-import { UpdateProductDto } from './dto/update-product.dto';
 import { Product } from './entities/product.entity';
 import { Repository } from 'typeorm';
 import { CreateProductDto } from './dto/create-product.dto';
@@ -14,12 +13,15 @@ import { UpdateProductQuantityDto } from './dto/update-product-quantity.dto';
 import { TaxIdDto } from './dto/taxId-dto';
 import { CategoryTypeEnum } from '../category/constants/category-enum';
 import { Category } from '../category/entities/category.entity';
+import { Discount } from '../discount/entities/discount.entity';
 
 @Injectable()
 export class ProductService {
   constructor(
     @InjectRepository(Product)
     private readonly productRepository: Repository<Product>,
+    @InjectRepository(Discount)
+    private readonly discountRepository: Repository<Discount>,
     @InjectRepository(Category)
     private readonly categoryRepository: Repository<Category>,
     @InjectRepository(ProductUnit)
@@ -358,9 +360,20 @@ export class ProductService {
       isDeleted: 0,
     });
 
-    productUnits.forEach(
-      (productUnit) => (productUnit.productId = +savedNewProduct.id),
-    );
+    if (productUnits.length > 0)
+      productUnits.forEach(
+        (productUnit) => (productUnit.productId = +savedNewProduct.id),
+      );
+
+    const discounts = await this.discountRepository.findBy({
+      productId,
+      isDeleted: false,
+    });
+
+    if (discounts.length > 0)
+      discounts.forEach(
+        (discount) => (discount.productId = +savedNewProduct.id),
+      );
 
     await this.productUnitRepository.save(productUnits);
 
@@ -398,10 +411,21 @@ export class ProductService {
   async remove(id: number) {
     const product = await this.productRepository.findOne({
       where: { id },
-      relations: { productUnits: true, category: true },
+      relations: { productUnits: true, discounts: true, category: true },
     });
     product.isDeleted = 1;
     const savedProduct = await this.productRepository.save(product);
+
+    for (const discount of product.discounts) {
+      discount.isDeleted = true;
+    }
+
+    for (const productUnit of product.productUnits) {
+      productUnit.isDeleted = 1;
+    }
+
+    await this.discountRepository.save(product.discounts);
+    await this.productUnitRepository.save(product.productUnits);
 
     const anotherProduct = await this.productRepository.findOne({
       where: { parentCategoryId: product.parentCategoryId, isDeleted: 0 },

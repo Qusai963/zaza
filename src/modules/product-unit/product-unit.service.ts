@@ -80,7 +80,11 @@ export class ProductUnitService {
   findByProductId(productId: number) {
     return this.productUnitRepository.find({
       where: { productId, isDeleted: 0 },
-      relations: ['textContent', 'textContent.translations'],
+      relations: [
+        'textContent',
+        'textContent.translations',
+        'unit.textContent',
+      ],
     });
   }
 }

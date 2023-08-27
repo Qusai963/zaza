@@ -22,9 +22,6 @@ export class Order {
   @CreateDateColumn()
   createdAt: Date;
 
-  @UpdateDateColumn()
-  updatedAt: Date;
-
   @Column({ default: 0 })
   isSent: number;
 

@@ -4,7 +4,7 @@ import { UpdateDiscountDto } from './dto/update-discount.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Discount } from './entities/discount.entity';
 import { In, MoreThan, Repository } from 'typeorm';
-import { Pagination } from 'src/core/query/pagination.query';
+import { PaginationWithLanguage } from 'src/core/query/pagination-with-language.query';
 import { QueryFilter } from 'src/core/query/query-filter.query';
 import { Product } from '../product/entities/product.entity';
 import { getWhereByCondition } from 'src/core/helpers/search.helper';
@@ -33,7 +33,6 @@ export class DiscountService {
           discountExists.isDeleted = true;
           await this.discountRepository.save(discountExists);
         }
-
         const discount = this.discountRepository.create(dto);
         return discount;
       }),

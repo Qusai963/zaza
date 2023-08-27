@@ -32,11 +32,11 @@ export class User {
   @CreateDateColumn()
   createdAt: Date;
 
-  // @OneToMany(
-  //   () => DiscountSpecificUser,
-  //   (discountSpecificUser) => discountSpecificUser.user,
-  // )
-  // discountSpecificUsers: DiscountSpecificUser[];
+  @OneToMany(
+    () => DiscountSpecificUser,
+    (discountSpecificUser) => discountSpecificUser.user,
+  )
+  discountSpecificUsers: DiscountSpecificUser[];
 
   @OneToMany(() => Order, (order) => order.user)
   orders: Order[];
@@ -44,6 +44,6 @@ export class User {
   @OneToMany(() => Phone, (phone) => phone.user)
   phones: Phone[];
 
-  // @OneToMany(() => FavoriteProduct, (favoriteProducts) => favoriteProducts.user)
-  // favoriteProducts: FavoriteProduct[];
+  @OneToMany(() => FavoriteProduct, (favoriteProducts) => favoriteProducts.user)
+  favoriteProducts: FavoriteProduct[];
 }

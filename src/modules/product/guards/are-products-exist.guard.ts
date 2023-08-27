@@ -4,7 +4,6 @@ import {
   ExecutionContext,
   NotFoundException,
 } from '@nestjs/common';
-import { Observable } from 'rxjs';
 import { ProductService } from '../product.service';
 
 @Injectable()

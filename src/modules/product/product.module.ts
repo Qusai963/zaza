@@ -21,6 +21,7 @@ import { MulterModule } from '@nestjs/platform-express';
 import { ProductUnitService } from '../product-unit/product-unit.service';
 import { ProductUnit } from '../product-unit/entities/product-unit.entity';
 import { Unit } from '../unit/entities/unit.entity';
+import { Discount } from '../discount/entities/discount.entity';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { Unit } from '../unit/entities/unit.entity';
       User,
       ProductUnit,
       Unit,
+      Discount,
     ]),
     MulterModule.register({
       dest: '../uploads',

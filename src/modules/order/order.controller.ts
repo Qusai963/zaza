@@ -8,6 +8,7 @@ import {
   Param,
   Delete,
   UseGuards,
+  Query,
   Req,
 } from '@nestjs/common';
 import { OrderService } from './order.service';
@@ -20,6 +21,11 @@ import { ValidProductUnitsGuard } from '../product-unit/guards/valid-product-uni
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Order } from './entities/order.entity';
+import { IsAdminGuard } from '../auth/guards/is-admin.guard';
+import { UserNotFoundGuard } from '../user/guards/user-not-found.guard';
+import { PaginationWithLanguage } from 'src/core/query/pagination-with-language.query';
+import { Pagination } from 'src/core/query/pagination.query';
+import { LanguageQuery } from 'src/core/query/language.query';
 
 @Controller('order')
 export class OrderController {
@@ -62,14 +68,29 @@ export class OrderController {
     return this.orderRepository.save(order);
   }
 
-  @Get()
-  findAll() {
-    return this.orderService.findAll();
+  @UseGuards(AuthGuard, IsAdminGuard, UserNotFoundGuard)
+  @Get('user/:id')
+  findAllByUserId(@Param('id') userId: number, @Query() query: Pagination) {
+    return this.orderService.findAllByUserId(userId, query);
   }
 
+  @UseGuards(AuthGuard, IsAdminGuard)
+  @Get()
+  findAll(@Query() query: Pagination) {
+    return this.orderService.findAll(query);
+  }
+
+  @UseGuards(AuthGuard)
+  @Get('user')
+  findMyOrders(@Query() query: Pagination, @Req() req: Request) {
+    const userId = getUserId(req);
+    return this.orderService.findMyOrders(userId, query);
+  }
+
+  @UseGuards(AuthGuard, IsAdminGuard)
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.orderService.findOne(+id);
+  findOne(@Param('id') id: string, @Query() language: LanguageQuery) {
+    return this.orderService.findOne(+id, language);
   }
 
   @Delete(':id')
