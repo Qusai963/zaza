@@ -62,6 +62,7 @@ export class CategoryService {
 
     return {
       count: categories[1],
+      typeName: 'root',
       categories: translatedCategories,
     };
   }

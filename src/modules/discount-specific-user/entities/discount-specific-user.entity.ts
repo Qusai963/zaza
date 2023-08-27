@@ -1,20 +1,35 @@
 import { Product } from 'src/modules/product/entities/product.entity';
 import { User } from 'src/modules/user/entities/user.entity';
-import { PrimaryGeneratedColumn, Entity, Column, ManyToOne } from 'typeorm';
+import {
+  PrimaryGeneratedColumn,
+  Entity,
+  Column,
+  ManyToOne,
+  CreateDateColumn,
+} from 'typeorm';
 @Entity()
 export class DiscountSpecificUser {
   @PrimaryGeneratedColumn()
   id: number;
 
   @Column()
-  products_id: number;
+  productId: number;
 
   @Column()
-  user_name: string;
+  userId: number;
 
-  // @ManyToOne(() => Product, product => product.discountSpecificUsers)
-  // product: Product;
+  @Column()
+  percent: number;
 
-  // @ManyToOne(() => User, user => user.discountSpecificUsers)
-  // user: User;
+  @Column({ type: 'tinyint', width: 1 })
+  isDeleted: number;
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @ManyToOne(() => Product, (product) => product.discountSpecificUsers)
+  product: Product;
+
+  @ManyToOne(() => User, (user) => user.discountSpecificUsers)
+  user: User;
 }

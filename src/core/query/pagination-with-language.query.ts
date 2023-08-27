@@ -1,14 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
-import {
-  IsDefined,
-  IsEnum,
-  IsNumber,
-  IsOptional,
-  IsString,
-} from 'class-validator';
+import { IsDefined, IsEnum, IsNumber, IsString } from 'class-validator';
 
-export class Pagination {
+export class PaginationWithLanguage {
   @ApiProperty({ required: true, minimum: 1, default: 1 })
   @Type(() => Number)
   @IsNumber()
@@ -21,14 +15,9 @@ export class Pagination {
   @IsDefined()
   limit: number;
 
-  @IsOptional()
+  @ApiProperty({ required: true, default: 'de' })
   @IsString()
-  @IsEnum(['newest', 'oldest'])
-  @ApiProperty({
-    type: String,
-    enum: ['newest', 'oldest'],
-    required: false,
-    default: 'newest',
-  })
-  sort: string;
+  @IsDefined()
+  @IsEnum(['en', 'de', 'ar'])
+  language: string;
 }

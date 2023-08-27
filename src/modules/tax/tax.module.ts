@@ -16,6 +16,7 @@ import { Product } from '../product/entities/product.entity';
 import { ProductService } from '../product/product.service';
 import { ProductUnit } from '../product-unit/entities/product-unit.entity';
 import { Category } from '../category/entities/category.entity';
+import { Discount } from '../discount/entities/discount.entity';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { Category } from '../category/entities/category.entity';
       Product,
       ProductUnit,
       Category,
+      Discount,
     ]),
   ],
   controllers: [TaxController],

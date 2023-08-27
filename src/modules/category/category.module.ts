@@ -17,6 +17,7 @@ import { JwtService } from '@nestjs/jwt';
 import { UserService } from '../user/user.service';
 import { User } from '../user/entities/user.entity';
 import { ProductUnit } from '../product-unit/entities/product-unit.entity';
+import { Discount } from '../discount/entities/discount.entity';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { ProductUnit } from '../product-unit/entities/product-unit.entity';
       Product,
       ProductUnit,
       User,
+      Discount,
     ]),
   ],
   controllers: [CategoryController],

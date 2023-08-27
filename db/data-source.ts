@@ -1,7 +1,9 @@
 import { config } from 'dotenv';
 import { CategoryType } from 'src/modules/category/entities/category-type.entity';
 import { Category } from 'src/modules/category/entities/category.entity';
+import { DiscountSpecificUser } from 'src/modules/discount-specific-user/entities/discount-specific-user.entity';
 import { Discount } from 'src/modules/discount/entities/discount.entity';
+import { FavoriteProduct } from 'src/modules/favorite-product/entities/favorite-product.entity';
 import { Language } from 'src/modules/language/entities/language.entity';
 import { Order } from 'src/modules/order/entities/order.entity';
 import { Phone } from 'src/modules/phone/entities/phone.entity';
@@ -40,6 +42,8 @@ export const dataSourceOptions: DataSourceOptions = {
     CategoryType,
     Order,
     ProductOrder,
+    DiscountSpecificUser,
+    FavoriteProduct,
   ],
   synchronize: true,
   logging: false,
