@@ -259,7 +259,19 @@ export class ProductService {
       );
     }
 
-    const [products, count] = await qb.getManyAndCount();
+    let [products, count] = await qb.getManyAndCount();
+
+    // Sort the products based on the provided productUnitIds
+    products = products.sort((a, b) => {
+      const aIndex = productUnitIds.indexOf(
+        a.productUnits[0].id, // Assuming you want to sort by the first productUnit
+      );
+      const bIndex = productUnitIds.indexOf(
+        b.productUnits[0].id, // Assuming you want to sort by the first productUnit
+      );
+
+      return aIndex - bIndex;
+    });
 
     const translatedProducts = await Promise.all(
       products.map(async (product) => {

@@ -114,12 +114,13 @@ export class ProductController {
   }
 
   @UseGuards(AuthGuard)
-  @Get('findAllByProductUnitIds')
+  @Post('findAllByProductUnitIds')
   findAllByProductUnitIds(
     @Query() query: QueryFilter,
     @Req() req: Request,
     @Body() productUnitIds: ProductUnitIds,
   ) {
+    if (productUnitIds.productUnitIds.length == 0) return null;
     return this.productService.findAllByProductUnitIds(
       query,
       req,
