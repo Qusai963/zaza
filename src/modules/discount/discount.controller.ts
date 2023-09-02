@@ -13,7 +13,7 @@ import {
 import { DiscountService } from './discount.service';
 import { CreateDiscountDto } from './dto/create-discount.dto';
 import { UpdateDiscountDto } from './dto/update-discount.dto';
-import { AuthGuard } from '../auth/guards/auth.guard';
+import { AccessTokenGuard } from '../auth/guards/accessToken.guard';
 import { IsAdminGuard } from '../auth/guards/is-admin.guard';
 import { AreProductsExistGuard } from '../product/guards/are-products-exist.guard';
 import { QueryFilter } from 'src/core/query/query-filter.query';
@@ -24,7 +24,7 @@ import { Request } from 'express';
 export class DiscountController {
   constructor(private readonly discountService: DiscountService) {}
 
-  @UseGuards(AuthGuard, IsAdminGuard, AreProductsExistGuard)
+  @UseGuards(AccessTokenGuard, IsAdminGuard, AreProductsExistGuard)
   @Post()
   create(
     @Body('createDiscountDtoList') createDiscountDtoList: CreateDiscountDto[],
@@ -32,13 +32,13 @@ export class DiscountController {
     return this.discountService.create(createDiscountDtoList);
   }
 
-  @UseGuards(AuthGuard)
+  @UseGuards(AccessTokenGuard)
   @Get()
   findAll(@Query() query: QueryFilter, @Req() req: Request) {
     return this.discountService.findAll(query, req);
   }
 
-  @UseGuards(AuthGuard, IsAdminGuard, DoesDiscountExistGuard)
+  @UseGuards(AccessTokenGuard, IsAdminGuard, DoesDiscountExistGuard)
   @Patch(':id')
   update(
     @Param('id') id: string,
@@ -47,7 +47,7 @@ export class DiscountController {
     return this.discountService.update(+id, updateDiscountDto);
   }
 
-  @UseGuards(AuthGuard, IsAdminGuard, DoesDiscountExistGuard)
+  @UseGuards(AccessTokenGuard, IsAdminGuard, DoesDiscountExistGuard)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.discountService.remove(+id);

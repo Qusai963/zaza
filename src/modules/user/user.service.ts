@@ -86,7 +86,27 @@ export class UserService {
     return this.userRepository.findOneBy({ id: userId });
   }
 
+  public findByIdWithRefreshToken(userId: number) {
+    return this.userRepository.findOne({
+      where: { id: userId },
+      select: {
+        refreshToken: true,
+        email: true,
+        name: true,
+        id: true,
+        userName: true,
+      },
+    });
+  }
+
   public findByEmail(email: string) {
     return this.userRepository.findOneBy({ email });
+  }
+
+  async updateRefreshToken(userId: number, hashedRefreshToken: string) {
+    const user = await this.findById(userId);
+    user.refreshToken = hashedRefreshToken;
+
+    await this.userRepository.save(user);
   }
 }

@@ -16,7 +16,7 @@ import { DoesProductExistGuard } from '../product/guards/does-product-exist.guar
 import { DoesProductUnitLanguageCodeForTextContentExistGuard } from '../product/guards/does-product-unit-language-code-for-textContent-exist.guard';
 import { DoesProductUnitLanguageCodeForTranslationExistGuard } from '../product/guards/does-product-unit-language-code-for-translation-exist.guard';
 import { DoesUnitIdForProductUnitExistGuard } from '../product/guards/does-unit-id-for-product-unit-exist.guard';
-import { AuthGuard } from '../auth/guards/auth.guard';
+import { AccessTokenGuard } from '../auth/guards/accessToken.guard';
 import { DoesProductUnitExistGuard } from './guards/does-product-unit-exist.guard';
 import { TextContentService } from '../text-content/text-content.service';
 import { TranslationService } from '../translation/translation.service';
@@ -30,7 +30,7 @@ export class ProductUnitController {
   ) {}
 
   @UseGuards(
-    AuthGuard,
+    AccessTokenGuard,
     IsAdminGuard,
     DoesProductExistGuard,
     DoesProductUnitLanguageCodeForTextContentExistGuard,
@@ -51,7 +51,7 @@ export class ProductUnitController {
   }
 
   @UseGuards(
-    AuthGuard,
+    AccessTokenGuard,
     IsAdminGuard,
     DoesProductUnitExistGuard,
     DoesProductUnitLanguageCodeForTextContentExistGuard,
@@ -84,13 +84,13 @@ export class ProductUnitController {
     return { message: 'Updated product Successfully' };
   }
 
-  @UseGuards(AuthGuard, IsAdminGuard, DoesProductUnitExistGuard)
+  @UseGuards(AccessTokenGuard, IsAdminGuard, DoesProductUnitExistGuard)
   @Delete(':productUnitId')
   remove(@Param('productUnitId') id: string) {
     return this.productUnitService.remove(+id);
   }
 
-  @UseGuards(AuthGuard, IsAdminGuard, DoesProductExistGuard)
+  @UseGuards(AccessTokenGuard, IsAdminGuard, DoesProductExistGuard)
   @Get('findByProductId/:id')
   findByProductId(@Param('id') id: string) {
     return this.productUnitService.findByProductId(+id);

@@ -8,8 +8,9 @@ import {
   HttpCode,
   Inject,
   InternalServerErrorException,
+  Req,
 } from '@nestjs/common';
-import { AuthGuard } from './guards/auth.guard';
+import { AccessTokenGuard } from './guards/accessToken.guard';
 import { AuthService } from './auth.service';
 import { SignInDto } from './dto/sign-in.dto';
 import { REQUEST } from '@nestjs/core';
@@ -21,6 +22,7 @@ import { LocalAuthGuard } from './guards/local-auth.guard';
 import { catchingError } from 'src/core/error/helper/catching-error';
 import { IsAdminGuard } from './guards/is-admin.guard';
 import { ApiTags } from '@nestjs/swagger';
+import { RefreshTokenGuard } from './guards/refreshToken.guard';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -34,31 +36,33 @@ export class AuthController {
   @UseGuards(LocalAuthGuard)
   @Post('login')
   async login(@Body() signInDto: SignInDto) {
-    try {
-      return await this.authService.logIn(signInDto);
-    } catch (error) {
-      catchingError(error, this.request);
-    }
+    return await this.authService.logIn(signInDto);
   }
 
-  @UseGuards(AuthGuard, IsAdminGuard, DoesUserExistGuard)
+  @UseGuards(AccessTokenGuard, IsAdminGuard, DoesUserExistGuard)
   @Post('signup')
   async signUp(@Body() createUserDto: CreateUserDto) {
-    try {
-      return await this.authService.create(createUserDto);
-    } catch (error) {
-      catchingError(error, this.request);
-    }
+    return await this.authService.create(createUserDto);
   }
 
-  @UseGuards(AuthGuard)
+  @UseGuards(AccessTokenGuard)
   @Get('profile')
   async getProfile() {
-    try {
-      const userId = getUserId(this.request);
-      return await this.authService.profile(userId);
-    } catch (error) {
-      catchingError(error, this.request);
-    }
+    const userId = getUserId(this.request);
+    return await this.authService.profile(userId);
+  }
+
+  @UseGuards(AccessTokenGuard)
+  @Get('logout')
+  logout(@Req() req: Request) {
+    this.authService.logout(req.user['sub']);
+  }
+
+  @UseGuards(RefreshTokenGuard)
+  @Get('refresh')
+  refreshTokens(@Req() req: Request) {
+    const userId = getUserId(req);
+    const refreshToken = req.user['refreshToken'];
+    return this.authService.refreshTokens(userId, refreshToken);
   }
 }

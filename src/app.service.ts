@@ -21,7 +21,7 @@ export class AppService {
       this.userService.create({
         userName: 'admin',
         email: 'admin@gmail.com',
-        password: await this.authService.hashPassword('12345678'),
+        password: await this.authService.hashData('12345678'),
         name: 'zaza',
       });
 

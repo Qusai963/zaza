@@ -11,7 +11,7 @@ import {
   Req,
 } from '@nestjs/common';
 import { OrderService } from './order.service';
-import { AuthGuard } from '../auth/guards/auth.guard';
+import { AccessTokenGuard } from '../auth/guards/accessToken.guard';
 import { ProductOrderService } from '../product-order/product-order.service';
 import { getUserId } from '../user/helper/get-user-id.helper';
 import { Request } from 'express';
@@ -36,7 +36,7 @@ export class OrderController {
     private readonly orderRepository: Repository<Order>,
   ) {}
 
-  @UseGuards(AuthGuard, ValidProductUnitsGuard)
+  @UseGuards(AccessTokenGuard, ValidProductUnitsGuard)
   @Post()
   async create(
     @Body() createProductOrderDtoList: CreateProductOrderDto[],
@@ -85,26 +85,26 @@ export class OrderController {
     return order;
   }
 
-  @UseGuards(AuthGuard, IsAdminGuard, UserNotFoundGuard)
+  @UseGuards(AccessTokenGuard, IsAdminGuard, UserNotFoundGuard)
   @Get('user/:id')
   findAllByUserId(@Param('id') userId: number, @Query() query: Pagination) {
     return this.orderService.findAllByUserId(userId, query);
   }
 
-  @UseGuards(AuthGuard, IsAdminGuard)
+  @UseGuards(AccessTokenGuard, IsAdminGuard)
   @Get()
   findAll(@Query() query: Pagination) {
     return this.orderService.findAll(query);
   }
 
-  @UseGuards(AuthGuard)
+  @UseGuards(AccessTokenGuard)
   @Get('user')
   findMyOrders(@Query() query: Pagination, @Req() req: Request) {
     const userId = getUserId(req);
     return this.orderService.findMyOrders(userId, query);
   }
 
-  @UseGuards(AuthGuard, IsAdminGuard)
+  @UseGuards(AccessTokenGuard, IsAdminGuard)
   @Get(':id')
   findOne(@Param('id') id: string, @Query() language: LanguageQuery) {
     return this.orderService.findOne(+id, language);

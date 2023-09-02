@@ -8,7 +8,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { FavoriteProductService } from './favorite-product.service';
-import { AuthGuard } from '../auth/guards/auth.guard';
+import { AccessTokenGuard } from '../auth/guards/accessToken.guard';
 import { DoesProductExistGuard } from '../product/guards/does-product-exist.guard';
 import { getUserId } from '../user/helper/get-user-id.helper';
 import { Request } from 'express';
@@ -20,14 +20,14 @@ export class FavoriteProductController {
     private readonly favoriteProductService: FavoriteProductService,
   ) {}
 
-  @UseGuards(AuthGuard, DoesProductExistGuard)
+  @UseGuards(AccessTokenGuard, DoesProductExistGuard)
   @Post(':id')
   create(@Param('id') productId: number, @Req() req: Request) {
     const userId = getUserId(req);
     return this.favoriteProductService.create(userId, +productId);
   }
 
-  @UseGuards(AuthGuard)
+  @UseGuards(AccessTokenGuard)
   @Get()
   findAll(@Req() req: Request, @Query() query: QueryFilter) {
     const userId = getUserId(req);

@@ -30,7 +30,7 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { CreateTextContentDto } from '../text-content/dto/create-text-content.dto';
 import { SecondCreateTranslationDto } from '../translation/dto/create-translation.dto';
 import { ApiTags } from '@nestjs/swagger';
-import { AuthGuard } from '../auth/guards/auth.guard';
+import { AccessTokenGuard } from '../auth/guards/accessToken.guard';
 import { IsAdminGuard } from '../auth/guards/is-admin.guard';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Product } from './entities/product.entity';
@@ -63,7 +63,7 @@ export class ProductController {
   ) {}
 
   @UseGuards(
-    AuthGuard,
+    AccessTokenGuard,
     IsAdminGuard,
     DoesProductTaxExistGuard,
     DoesCategorySafeForProductsGuard,
@@ -107,13 +107,13 @@ export class ProductController {
     };
   }
 
-  @UseGuards(AuthGuard)
+  @UseGuards(AccessTokenGuard)
   @Get()
   findAll(@Query() query: QueryFilter, @Req() req: Request) {
     return this.productService.findAll(query, req);
   }
 
-  @UseGuards(AuthGuard)
+  @UseGuards(AccessTokenGuard)
   @Post('findAllByProductUnitIds')
   findAllByProductUnitIds(
     @Query() query: QueryFilter,
@@ -128,7 +128,7 @@ export class ProductController {
     );
   }
 
-  @UseGuards(AuthGuard, DoesProductExistGuard)
+  @UseGuards(AccessTokenGuard, DoesProductExistGuard)
   @Get(':id')
   findOne(
     @Param('id') id: string,
@@ -138,32 +138,32 @@ export class ProductController {
     return this.productService.findOneWithRelations(+id, language, req);
   }
 
-  @UseGuards(AuthGuard, IsAdminGuard, DoesProductExistGuard)
+  @UseGuards(AccessTokenGuard, IsAdminGuard, DoesProductExistGuard)
   @Get('findOneWithSimpleRelationsForUpdating/:id')
   findOneWithSimpleRelationsForUpdating(@Param('id') id: string) {
     return this.productService.findOneWithSimpleRelationsForUpdating(+id);
   }
 
-  @UseGuards(AuthGuard, IsAdminGuard, DoesProductExistGuard)
+  @UseGuards(AccessTokenGuard, IsAdminGuard, DoesProductExistGuard)
   @Get('findOneWithTaxRelationsForUpdating/:id')
   findOneWithTaxRelationsForUpdating(@Param('id') id: string) {
     return this.productService.findOneWithTaxRelationsForUpdating(+id);
   }
 
-  @UseGuards(AuthGuard, IsAdminGuard, DoesProductExistGuard)
+  @UseGuards(AccessTokenGuard, IsAdminGuard, DoesProductExistGuard)
   @Get('findOneWithComplexRelationsForUpdating/:id')
   findOneWithComplexRelationsForUpdating(@Param('id') id: string) {
     return this.productService.findOneWithComplexRelationsForUpdating(+id);
   }
 
-  @UseGuards(AuthGuard, IsAdminGuard, DoesProductExistGuard)
+  @UseGuards(AccessTokenGuard, IsAdminGuard, DoesProductExistGuard)
   @Get('findOneWithQuantity/:id')
   findOneWithQuantity(@Param('id') id: string) {
     return this.productService.findOneWithQuantity(+id);
   }
 
   @UseGuards(
-    AuthGuard,
+    AccessTokenGuard,
     IsAdminGuard,
     DoesProductExistGuard,
     DoesTaxExistInBodyGuard,
@@ -174,7 +174,7 @@ export class ProductController {
   }
 
   @UseGuards(
-    AuthGuard,
+    AccessTokenGuard,
     IsAdminGuard,
     DoesProductExistGuard,
     DoesLanguageCodeForTextContentExistGuard,
@@ -206,7 +206,7 @@ export class ProductController {
     return { product, updatedTextContent, updatedTranslation };
   }
 
-  @UseGuards(AuthGuard, IsAdminGuard, DoesProductExistGuard)
+  @UseGuards(AccessTokenGuard, IsAdminGuard, DoesProductExistGuard)
   @Patch('updateQuantity/:id')
   async updateQuantity(
     @Param('id') id: string,
@@ -218,13 +218,13 @@ export class ProductController {
     );
   }
 
-  @UseGuards(AuthGuard, IsAdminGuard, DoesProductExistGuard)
+  @UseGuards(AccessTokenGuard, IsAdminGuard, DoesProductExistGuard)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.productService.remove(+id);
   }
 
-  @UseGuards(AuthGuard, IsAdminGuard)
+  @UseGuards(AccessTokenGuard, IsAdminGuard)
   @Post('image')
   @UseInterceptors(FileInterceptor('image'))
   async createImage(

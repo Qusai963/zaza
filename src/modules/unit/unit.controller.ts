@@ -11,7 +11,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { UnitService } from './unit.service';
-import { AuthGuard } from '../auth/guards/auth.guard';
+import { AccessTokenGuard } from '../auth/guards/accessToken.guard';
 import { IsAdminGuard } from '../auth/guards/is-admin.guard';
 import { REQUEST } from '@nestjs/core';
 import { Request } from 'express';
@@ -38,7 +38,7 @@ export class UnitController {
   ) {}
 
   @UseGuards(
-    AuthGuard,
+    AccessTokenGuard,
     IsAdminGuard,
     DoesLanguageCodeForTextContentExistGuard,
     DoesLanguageCodeForTranslationExistGuard,
@@ -60,19 +60,19 @@ export class UnitController {
     return this.unitService.create(createdTextContent);
   }
 
-  @UseGuards(AuthGuard, IsAdminGuard)
+  @UseGuards(AccessTokenGuard, IsAdminGuard)
   @Get()
   findAll(@Query() code: LanguageQuery) {
     return this.unitService.findAll(code.language);
   }
 
-  @UseGuards(AuthGuard, IsAdminGuard)
+  @UseGuards(AccessTokenGuard, IsAdminGuard)
   @Get(':id')
   findOne(@Param('id') id: string, @Query() code: LanguageQuery) {
     return this.unitService.findByCode(+id, code.language);
   }
 
-  @UseGuards(AuthGuard, IsAdminGuard, DoesUnitExistGuard)
+  @UseGuards(AccessTokenGuard, IsAdminGuard, DoesUnitExistGuard)
   @Patch(':id')
   async update(
     @Param('id') id: string,
@@ -94,7 +94,7 @@ export class UnitController {
     return unit;
   }
 
-  @UseGuards(AuthGuard, IsAdminGuard, DoesUnitExistGuard)
+  @UseGuards(AccessTokenGuard, IsAdminGuard, DoesUnitExistGuard)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.unitService.remove(+id);

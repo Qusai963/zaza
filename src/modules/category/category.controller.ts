@@ -31,7 +31,7 @@ import { Repository } from 'typeorm';
 import { ImagesService } from '../images/images.service';
 import { CreateTextContentDto } from '../text-content/dto/create-text-content.dto';
 import { SecondCreateTranslationDto } from '../translation/dto/create-translation.dto';
-import { AuthGuard } from '../auth/guards/auth.guard';
+import { AccessTokenGuard } from '../auth/guards/accessToken.guard';
 import { IsAdminGuard } from '../auth/guards/is-admin.guard';
 import { DoesCategoryExistGuard } from './guards/does-category-exist.guard';
 import { UpdateTextContentDto } from '../text-content/dto/update-text-content.dto';
@@ -53,7 +53,7 @@ export class CategoryController {
   ) {}
 
   @UseGuards(
-    AuthGuard,
+    AccessTokenGuard,
     IsAdminGuard,
     DoesParentCategorySafeForCategoriesGuard,
     DoesLanguageCodeForTextContentExistGuard,
@@ -79,25 +79,25 @@ export class CategoryController {
     );
   }
 
-  @UseGuards(AuthGuard)
+  @UseGuards(AccessTokenGuard)
   @Get()
   findAllFathers(@Query() query: PaginationWithLanguage) {
     return this.categoryService.findAllFathers(query);
   }
 
-  @UseGuards(AuthGuard, IsAdminGuard)
+  @UseGuards(AccessTokenGuard, IsAdminGuard)
   @Get('acceptProducts')
   findAllThatAcceptProducts(@Query('language') language: string) {
     return this.categoryService.findAllThatAcceptProducts(language);
   }
 
-  @UseGuards(AuthGuard, DoesCategoryExistGuard)
+  @UseGuards(AccessTokenGuard, DoesCategoryExistGuard)
   @Get(':id/findWithRelation')
   findOneWithRelations(@Param('id') id: string) {
     return this.categoryService.findOneWithTextContentAndTranslations(+id);
   }
 
-  @UseGuards(AuthGuard, DoesCategoryExistGuard)
+  @UseGuards(AccessTokenGuard, DoesCategoryExistGuard)
   @Get(':id')
   findOne(
     @Param('id') id: string,
@@ -107,7 +107,7 @@ export class CategoryController {
     return this.categoryService.findOneWithChildren(+id, query, req);
   }
 
-  @UseGuards(AuthGuard, IsAdminGuard, DoesCategoryExistGuard)
+  @UseGuards(AccessTokenGuard, IsAdminGuard, DoesCategoryExistGuard)
   @Patch(':id')
   async update(
     @Param('id') id: string,
@@ -130,13 +130,13 @@ export class CategoryController {
     return { category, updatedTextContent, updatedTranslation };
   }
 
-  @UseGuards(AuthGuard, IsAdminGuard, DoesCategoryExistGuard)
+  @UseGuards(AccessTokenGuard, IsAdminGuard, DoesCategoryExistGuard)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.categoryService.remove(+id);
   }
 
-  @UseGuards(AuthGuard, IsAdminGuard)
+  @UseGuards(AccessTokenGuard, IsAdminGuard)
   @Post('image')
   @UseInterceptors(FileInterceptor('image'))
   async createImage(

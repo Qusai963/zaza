@@ -24,7 +24,7 @@ import { DoesTaxExistInParamGuard } from './guards/does-tax-exists-in-param.guar
 import { CreateTextContentDto } from '../text-content/dto/create-text-content.dto';
 import { SecondCreateTranslationDto } from '../translation/dto/create-translation.dto';
 import { IsAdminGuard } from '../auth/guards/is-admin.guard';
-import { AuthGuard } from '../auth/guards/auth.guard';
+import { AccessTokenGuard } from '../auth/guards/accessToken.guard';
 import { UpdateTextContentDto } from '../text-content/dto/update-text-content.dto';
 import { UpdateSecondTranslationDtoList } from '../translation/dto/update-translation.dto';
 import { ApiTags } from '@nestjs/swagger';
@@ -42,7 +42,7 @@ export class TaxController {
 
   @Post()
   @UseGuards(
-    AuthGuard,
+    AccessTokenGuard,
     IsAdminGuard,
     DoesLanguageCodeForTextContentExistGuard,
     DoesLanguageCodeForTranslationExistGuard,
@@ -67,19 +67,19 @@ export class TaxController {
     }
   }
 
-  @UseGuards(AuthGuard, IsAdminGuard)
+  @UseGuards(AccessTokenGuard, IsAdminGuard)
   @Get()
   findAll(@Query('code') code: string) {
     return this.taxService.findAll(code);
   }
 
-  @UseGuards(AuthGuard, IsAdminGuard, DoesTaxExistInParamGuard)
+  @UseGuards(AccessTokenGuard, IsAdminGuard, DoesTaxExistInParamGuard)
   @Get(':id')
   findOne(@Param('id') id: string, @Query() code: LanguageQuery) {
     return this.taxService.getOne(+id, code.language);
   }
 
-  @UseGuards(AuthGuard, IsAdminGuard, DoesTaxExistInParamGuard)
+  @UseGuards(AccessTokenGuard, IsAdminGuard, DoesTaxExistInParamGuard)
   @Patch(':id')
   async update(
     @Param('id') id: string,
@@ -102,7 +102,7 @@ export class TaxController {
     return this.taxService.update(+id, updateTaxDto);
   }
 
-  @UseGuards(DoesTaxExistInParamGuard, AuthGuard, IsAdminGuard)
+  @UseGuards(DoesTaxExistInParamGuard, AccessTokenGuard, IsAdminGuard)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.taxService.remove(+id);
