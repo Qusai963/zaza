@@ -28,11 +28,6 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe());
   // app.use(csurf());
   //  app.useGlobalFilters(new CustomExceptionFilter());
-  const port = 8000;
-  const ipAddress = '192.168.1.105'; 
-
-  app.listen(port, ipAddress, () => {
-    console.log(`Server running at http://${ipAddress}:${port}/`);
-  });
+  await app.listen(3333);
 }
 bootstrap();

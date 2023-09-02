@@ -27,6 +27,7 @@ export class DoesUnitIdForProductUnitExistGuard implements CanActivate {
     const idCount = await this.unitRepository.count({
       where: {
         id: In(id),
+        isDeleted: false,
       },
     });
     if (idCount != id.length)

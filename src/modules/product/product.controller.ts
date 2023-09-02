@@ -48,6 +48,7 @@ import { UpdateSecondTranslationDtoList } from '../translation/dto/update-transl
 import { UpdateProductQuantityDto } from './dto/update-product-quantity.dto';
 import { DoesTaxExistInBodyGuard } from '../tax/guards/does-tax-exists-in-body.guard';
 import { TaxIdDto } from './dto/taxId-dto';
+import { ProductUnitIds } from './dto/product-unit-ids.dto';
 
 @ApiTags('product')
 @Controller('product')
@@ -110,6 +111,20 @@ export class ProductController {
   @Get()
   findAll(@Query() query: QueryFilter, @Req() req: Request) {
     return this.productService.findAll(query, req);
+  }
+
+  @UseGuards(AuthGuard)
+  @Get('findAllByProductUnitIds')
+  findAllByProductUnitIds(
+    @Query() query: QueryFilter,
+    @Req() req: Request,
+    @Body() productUnitIds: ProductUnitIds,
+  ) {
+    return this.productService.findAllByProductUnitIds(
+      query,
+      req,
+      productUnitIds.productUnitIds,
+    );
   }
 
   @UseGuards(AuthGuard, DoesProductExistGuard)

@@ -38,7 +38,7 @@ export class DiscountService {
     return this.discountRepository.save(discountsToCreate);
   }
 
-  // TODO: PRODUCT
+
   async findAll(query: QueryFilter, req: Request) {
     const userId = getUserId(req);
     const prodIds = await this.discountRepository.find({
