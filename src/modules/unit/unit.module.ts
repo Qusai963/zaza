@@ -12,10 +12,21 @@ import { TextContent } from '../text-content/entities/text-content.entity';
 import { Translation } from '../translation/entities/translation.entity';
 import { Language } from '../language/entities/language.entity';
 import { LanguageService } from '../language/language.service';
+import { ProductUnitModule } from '../product-unit/product-unit.module';
+import { ProductUnitService } from '../product-unit/product-unit.service';
+import { ProductUnit } from '../product-unit/entities/product-unit.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, Unit, TextContent, Translation, Language]),
+    TypeOrmModule.forFeature([
+      User,
+      Unit,
+      TextContent,
+      Translation,
+      Language,
+      ProductUnit,
+    ]),
+    ProductUnitModule,
   ],
   controllers: [UnitController],
   providers: [
@@ -25,6 +36,7 @@ import { LanguageService } from '../language/language.service';
     TextContentService,
     TranslationService,
     LanguageService,
+    ProductUnitService,
   ],
 })
 export class UnitModule {}

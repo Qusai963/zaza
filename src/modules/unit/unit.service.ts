@@ -3,11 +3,16 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Unit } from './entities/unit.entity';
 import { Repository } from 'typeorm';
 import { TextContent } from '../text-content/entities/text-content.entity';
+import { ProductUnitService } from '../product-unit/product-unit.service';
+import { ProductUnit } from '../product-unit/entities/product-unit.entity';
 
 @Injectable()
 export class UnitService {
   constructor(
     @InjectRepository(Unit) private readonly unitRepository: Repository<Unit>,
+    private readonly productUnitService: ProductUnitService,
+    @InjectRepository(ProductUnit)
+    private readonly productUnitRepository: Repository<ProductUnit>,
   ) {}
   async create(textContent: TextContent) {
     const unit = this.unitRepository.create({
@@ -78,6 +83,14 @@ export class UnitService {
   async remove(id: number) {
     const unit = await this.findOne(id);
     unit.isDeleted = true;
+    const productUnits = await this.productUnitService.findByUnitId(id);
+
+    productUnits.forEach((productUnit) => {
+      productUnit.isDeleted = 1;
+    });
+
+    await this.productUnitRepository.save(productUnits);
+
     return this.unitRepository.save(unit);
   }
 }
