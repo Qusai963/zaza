@@ -18,6 +18,8 @@ import { UserService } from '../user/user.service';
 import { User } from '../user/entities/user.entity';
 import { ProductUnit } from '../product-unit/entities/product-unit.entity';
 import { Discount } from '../discount/entities/discount.entity';
+import { FavoriteProduct } from '../favorite-product/entities/favorite-product.entity';
+import { DiscountSpecificUser } from '../discount-specific-user/entities/discount-specific-user.entity';
 
 @Module({
   imports: [
@@ -33,6 +35,8 @@ import { Discount } from '../discount/entities/discount.entity';
       ProductUnit,
       User,
       Discount,
+      FavoriteProduct,
+      DiscountSpecificUser,
     ]),
   ],
   controllers: [CategoryController],

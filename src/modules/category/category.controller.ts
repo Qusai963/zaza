@@ -8,7 +8,6 @@ import {
   Param,
   Delete,
   UseGuards,
-  Inject,
   Query,
   UseInterceptors,
   UploadedFile,
@@ -16,12 +15,11 @@ import {
   MaxFileSizeValidator,
   FileTypeValidator,
   NotFoundException,
+  Req,
 } from '@nestjs/common';
 import { CategoryService } from './category.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { DoesParentCategorySafeForCategoriesGuard } from './guards/does-parent-category-safe-for-categories.guard';
-import { REQUEST } from '@nestjs/core';
-import { Request } from 'express';
 import { TranslationService } from '../translation/translation.service';
 import { TextContentService } from '../text-content/text-content.service';
 import { DoesLanguageCodeForTextContentExistGuard } from '../language/guards/does-language-code-for-textContent-exist.guard';
@@ -39,13 +37,14 @@ import { DoesCategoryExistGuard } from './guards/does-category-exist.guard';
 import { UpdateTextContentDto } from '../text-content/dto/update-text-content.dto';
 import { UpdateSecondTranslationDtoList } from '../translation/dto/update-translation.dto';
 import { ApiTags } from '@nestjs/swagger';
+import { PaginationWithLanguage } from 'src/core/query/pagination-with-language.query';
+import { Request } from 'express';
 
 @ApiTags('category')
 @Controller('category')
 export class CategoryController {
   constructor(
     private readonly categoryService: CategoryService,
-    @Inject(REQUEST) private request: Request,
     private readonly textContentService: TextContentService,
     private readonly translationService: TranslationService,
     private imageService: ImagesService,
@@ -70,7 +69,6 @@ export class CategoryController {
       createTextContentDto,
     );
 
-    // TODO: apply validation on this array
     await this.translationService.createMany(
       createTranslationDtoList,
       createdTextContent.id,
@@ -83,12 +81,8 @@ export class CategoryController {
 
   @UseGuards(AuthGuard)
   @Get()
-  findAllFathers(
-    @ParamRequired('limit') limit: string,
-    @ParamRequired('page') page: string,
-    @Query('language') language: string,
-  ) {
-    return this.categoryService.findAllFathers(+limit, +page, language);
+  findAllFathers(@Query() query: PaginationWithLanguage) {
+    return this.categoryService.findAllFathers(query);
   }
 
   @UseGuards(AuthGuard, IsAdminGuard)
@@ -107,16 +101,10 @@ export class CategoryController {
   @Get(':id')
   findOne(
     @Param('id') id: string,
-    @ParamRequired('limit') limit: string,
-    @ParamRequired('page') page: string,
-    @Query('language') language: string,
+    @Query() query: PaginationWithLanguage,
+    @Req() req: Request,
   ) {
-    return this.categoryService.findOneWithChildren(
-      +id,
-      +limit,
-      +page,
-      language,
-    );
+    return this.categoryService.findOneWithChildren(+id, query, req);
   }
 
   @UseGuards(AuthGuard, IsAdminGuard, DoesCategoryExistGuard)

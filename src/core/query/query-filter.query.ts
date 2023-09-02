@@ -32,6 +32,11 @@ export class QueryFilter {
   @IsOptional()
   search: string;
 
+  @ApiProperty({ required: false, default: '' })
+  @IsString()
+  @IsOptional()
+  searchByName: string;
+
   @IsOptional()
   @IsString()
   @IsEnum(['newest', 'oldest'])

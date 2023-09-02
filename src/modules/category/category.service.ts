@@ -1,5 +1,5 @@
 import { ProductService } from './../product/product.service';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Repository, Not, In } from 'typeorm';
 import { Category } from './entities/category.entity';
@@ -7,16 +7,28 @@ import { TextContent } from '../text-content/entities/text-content.entity';
 import { CategoryTypeEnum } from './constants/category-enum';
 import { Product } from '../product/entities/product.entity';
 import { QueryFilter } from 'src/core/query/query-filter.query';
+import { PaginationWithLanguage } from 'src/core/query/pagination-with-language.query';
+import { Request } from 'express';
+import { Discount } from '../discount/entities/discount.entity';
+import { FavoriteProduct } from '../favorite-product/entities/favorite-product.entity';
+import { DiscountSpecificUser } from '../discount-specific-user/entities/discount-specific-user.entity';
+import { ProductUnit } from '../product-unit/entities/product-unit.entity';
 
 @Injectable()
 export class CategoryService {
   constructor(
     @InjectRepository(Category)
     private readonly categoryRepository: Repository<Category>,
+    @InjectRepository(Discount)
+    private readonly discountRepository: Repository<Discount>,
     @InjectRepository(Product)
     private readonly productRepository: Repository<Product>,
-    @InjectRepository(TextContent)
-    private readonly textContentRepository: Repository<TextContent>,
+    @InjectRepository(FavoriteProduct)
+    private readonly favoriteProductRepository: Repository<FavoriteProduct>,
+    @InjectRepository(DiscountSpecificUser)
+    private readonly discountSpecificUserRepository: Repository<DiscountSpecificUser>,
+    @InjectRepository(ProductUnit)
+    private readonly productUnitRepository: Repository<ProductUnit>,
     private readonly productService: ProductService,
   ) {}
   create(parentCategoryId: number, textContent: TextContent) {
@@ -29,7 +41,11 @@ export class CategoryService {
     return this.categoryRepository.save(category);
   }
 
-  async findAllFathers(limit: number, page: number, code: string) {
+  async findAllFathers(query: PaginationWithLanguage) {
+    const limit = query.limit;
+    const page = query.page;
+    const code = query.language;
+
     const categories = await this.categoryRepository.findAndCount({
       where: {
         parentCategoryId: IsNull(),
@@ -69,10 +85,12 @@ export class CategoryService {
 
   async findOneWithChildren(
     id: number,
-    limit: number,
-    page: number,
-    code: string,
+    query: PaginationWithLanguage,
+    req: Request,
   ) {
+    const limit = query.limit;
+    const page = query.page;
+    const code = query.language;
     const category = await this.findOneWithTextContentAndTranslations(id);
 
     const translatedMainCategory = category.textContent.translations.find(
@@ -127,14 +145,13 @@ export class CategoryService {
         categories: translatedCategories,
       };
     }
-
-    let query = new QueryFilter();
-    query.limit = limit;
-    query.page = page;
-    query.language = code;
+    let queryFilter = new QueryFilter();
+    queryFilter.limit = limit;
+    queryFilter.page = page;
+    queryFilter.language = code;
 
     const { translatedProducts, count: numberOfProducts } =
-      await this.productService.findAll(query, id);
+      await this.productService.findAll(queryFilter, req, id);
 
     if (numberOfProducts > 0)
       return {
@@ -227,9 +244,39 @@ export class CategoryService {
       // Soft delete products associated with the current category
       const products = await this.productRepository.find({
         where: { parentCategoryId: currentCategory.id, isDeleted: 0 },
+        relations: {
+          discounts: true,
+          discountSpecificUsers: true,
+          productUnits: true,
+          favoriteProducts: true,
+        },
       });
       for (const product of products) {
         product.isDeleted = 1;
+        const discounts = await this.discountRepository.findBy({
+          productId: product.id,
+        });
+        await this.discountRepository.remove(discounts);
+
+        const discountSpecificUsers =
+          await this.discountSpecificUserRepository.findBy({
+            productId: product.id,
+          });
+        await this.discountSpecificUserRepository.remove(discountSpecificUsers);
+
+        const favoriteProducts = await this.favoriteProductRepository.findBy({
+          productId: product.id,
+        });
+        await this.favoriteProductRepository.remove(favoriteProducts);
+
+        const productUnits = await this.productUnitRepository.findBy({
+          productId: product.id,
+        });
+        productUnits.forEach((productUnit) => {
+          productUnit.isDeleted = 1;
+        });
+        await this.productUnitRepository.save(productUnits);
+
         await this.productRepository.save(product);
       }
 
