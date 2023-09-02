@@ -1,5 +1,5 @@
 import { User } from 'src/modules/user/entities/user.entity';
-import { Module } from '@nestjs/common';
+import { Module, Global } from '@nestjs/common';
 import { FavoriteProductService } from './favorite-product.service';
 import { FavoriteProductController } from './favorite-product.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -12,7 +12,9 @@ import { ProductService } from '../product/product.service';
 import { Discount } from '../discount/entities/discount.entity';
 import { Category } from '../category/entities/category.entity';
 import { ProductUnit } from '../product-unit/entities/product-unit.entity';
+import { DiscountSpecificUser } from '../discount-specific-user/entities/discount-specific-user.entity';
 
+@Global()
 @Module({
   imports: [
     TypeOrmModule.forFeature([
@@ -22,10 +24,12 @@ import { ProductUnit } from '../product-unit/entities/product-unit.entity';
       Discount,
       Category,
       ProductUnit,
+      DiscountSpecificUser,
     ]),
     ProductModule,
   ],
   controllers: [FavoriteProductController],
   providers: [FavoriteProductService, JwtService, UserService, ProductService],
+  exports: [FavoriteProductService],
 })
 export class FavoriteProductModule {}

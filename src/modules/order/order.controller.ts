@@ -4,7 +4,6 @@ import {
   Get,
   Post,
   Body,
-  Patch,
   Param,
   Delete,
   UseGuards,
@@ -23,7 +22,6 @@ import { Repository } from 'typeorm';
 import { Order } from './entities/order.entity';
 import { IsAdminGuard } from '../auth/guards/is-admin.guard';
 import { UserNotFoundGuard } from '../user/guards/user-not-found.guard';
-import { PaginationWithLanguage } from 'src/core/query/pagination-with-language.query';
 import { Pagination } from 'src/core/query/pagination.query';
 import { LanguageQuery } from 'src/core/query/language.query';
 
@@ -51,21 +49,40 @@ export class OrderController {
       createProductOrderDtoList,
       order.id,
     );
-    const productOrderIds: number[] = [];
-    productOrders.forEach((productOrder) => {
-      productOrderIds.push(productOrder.id);
+
+    const totalPricePromises = productOrders.map(async (productOrder) => {
+      const totalDiscountedPriceQuery = this.productOrderRepository
+        .createQueryBuilder('po')
+        .leftJoinAndSelect('po.productUnit', 'pu')
+        .leftJoinAndSelect('pu.product', 'p')
+        .leftJoinAndSelect('p.discounts', 'd')
+        .leftJoinAndSelect('p.discountSpecificUsers', 'dsu')
+        .where('po.id = :id', { id: productOrder.id })
+        .select(
+          'po.amount * (pu.price - COALESCE(d.percent / 10, dsu.percent / 10, 0))',
+          'discountedPrice',
+        )
+        .getRawOne();
+
+      const calcTotalDiscountedPrice = await totalDiscountedPriceQuery;
+      const discountedPrice = calcTotalDiscountedPrice.discountedPrice;
+
+      productOrder.totalPrice = discountedPrice;
+      await this.productOrderRepository.save(productOrder);
+
+      return discountedPrice;
     });
 
-    const calcTotalPrice = await this.productOrderRepository
-      .createQueryBuilder('productOrder')
-      .leftJoinAndSelect('productOrder.productUnit', 'productUnit')
-      .where('productOrder.id IN (:...productOrderIds)', { productOrderIds }) // Use spread operator for array
-      .select('SUM(productOrder.amount * productUnit.price)', 'totalPrice') // Closing parenthesis added
-      .getRawOne(); // Use getRawOne() to get a single result as an object
+    const discountedPrices = await Promise.all(totalPricePromises);
+    const orderTotalPrice = discountedPrices.reduce(
+      (total, price) => total + price,
+      0,
+    );
 
-    order.totalPrice = calcTotalPrice.totalPrice;
+    order.totalPrice = orderTotalPrice;
+    await this.orderRepository.save(order);
 
-    return this.orderRepository.save(order);
+    return order;
   }
 
   @UseGuards(AuthGuard, IsAdminGuard, UserNotFoundGuard)
@@ -91,10 +108,5 @@ export class OrderController {
   @Get(':id')
   findOne(@Param('id') id: string, @Query() language: LanguageQuery) {
     return this.orderService.findOne(+id, language);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.orderService.remove(+id);
   }
 }

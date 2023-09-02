@@ -24,19 +24,19 @@ export class ProductOrderService {
     return this.productOrderRepository.save(productOrderList);
   }
 
-  findAll() {
-    return `This action returns all productOrder`;
-  }
+  // findAll() {
+  //   return `This action returns all productOrder`;
+  // }
 
-  findOne(id: number) {
-    return `This action returns a #${id} productOrder`;
-  }
+  // findOne(id: number) {
+  //   return `This action returns a #${id} productOrder`;
+  // }
 
-  update(id: number, updateProductOrderDto: UpdateProductOrderDto) {
-    return `This action updates a #${id} productOrder`;
-  }
+  // update(id: number, updateProductOrderDto: UpdateProductOrderDto) {
+  //   return `This action updates a #${id} productOrder`;
+  // }
 
-  remove(id: number) {
-    return `This action removes a #${id} productOrder`;
-  }
+  // remove(id: number) {
+  //   return `This action removes a #${id} productOrder`;
+  // }
 }

@@ -14,6 +14,9 @@ import { TextContentService } from '../text-content/text-content.service';
 import { TranslationService } from '../translation/translation.service';
 import { TextContent } from '../text-content/entities/text-content.entity';
 import { Translation } from '../translation/entities/translation.entity';
+import { DiscountService } from '../discount/discount.service';
+import { Discount } from '../discount/entities/discount.entity';
+import { Product } from '../product/entities/product.entity';
 
 @Module({
   imports: [
@@ -24,6 +27,8 @@ import { Translation } from '../translation/entities/translation.entity';
       ProductUnit,
       TextContent,
       Translation,
+      Discount,
+      Product,
     ]),
   ],
   controllers: [OrderController],
@@ -35,6 +40,7 @@ import { Translation } from '../translation/entities/translation.entity';
     ProductOrderService,
     TextContentService,
     TranslationService,
+    DiscountService,
   ],
 })
 export class OrderModule {}

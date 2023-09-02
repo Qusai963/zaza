@@ -8,7 +8,6 @@ import {
   OneToMany,
   CreateDateColumn,
   UpdateDateColumn,
-  JoinColumn,
 } from 'typeorm';
 
 @Entity()
@@ -23,7 +22,7 @@ export class Order {
   createdAt: Date;
 
   @Column({ default: 0 })
-  isSent: number;
+  isApproved: number;
 
   @Column()
   totalPrice: number;

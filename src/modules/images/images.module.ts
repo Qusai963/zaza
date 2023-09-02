@@ -11,6 +11,8 @@ import { TextContentService } from '../text-content/text-content.service';
 import { TextContent } from '../text-content/entities/text-content.entity';
 import { ProductUnit } from '../product-unit/entities/product-unit.entity';
 import { Discount } from '../discount/entities/discount.entity';
+import { FavoriteProduct } from '../favorite-product/entities/favorite-product.entity';
+import { DiscountSpecificUser } from '../discount-specific-user/entities/discount-specific-user.entity';
 
 @Module({
   imports: [
@@ -20,6 +22,8 @@ import { Discount } from '../discount/entities/discount.entity';
       TextContent,
       ProductUnit,
       Discount,
+      FavoriteProduct,
+      DiscountSpecificUser,
     ]),
     MulterModule.register({
       dest: '../uploads',
