@@ -3,7 +3,7 @@ import { CreateProductUnitDto } from './dto/create-product-unit.dto';
 import { UpdateProductUnitDto } from './dto/update-product-unit.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ProductUnit } from './entities/product-unit.entity';
-import { In, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { TranslationService } from '../translation/translation.service';
 import { TextContentService } from '../text-content/text-content.service';
 
@@ -50,15 +50,19 @@ export class ProductUnitService {
     return createdProductUnits;
   }
 
-  findOne(id: number) {
+  findOneById(id: number) {
     return this.productUnitRepository.findOneBy({ id, isDeleted: 0 });
+  }
+
+  findByUnitId(unitId: number) {
+    return this.productUnitRepository.findBy({ unitId, isDeleted: 0 });
   }
 
   async update(
     productUnitId: number,
     updateProductUnitDto: UpdateProductUnitDto,
   ) {
-    const productUnit = await this.findOne(productUnitId);
+    const productUnit = await this.findOneById(productUnitId);
     let price = productUnit.price;
     if (updateProductUnitDto[0].price) price = updateProductUnitDto[0].price;
     let unitId = productUnit.unitId;
@@ -72,19 +76,20 @@ export class ProductUnitService {
   }
 
   async remove(productUnitId: number) {
-    const productUnit = await this.findOne(productUnitId);
+    const productUnit = await this.findOneById(productUnitId);
     productUnit.isDeleted = 1;
     return this.productUnitRepository.save(productUnit);
   }
 
   findByProductId(productId: number) {
-    return this.productUnitRepository.find({
-      where: { productId, isDeleted: 0 },
-      relations: [
-        'textContent',
-        'textContent.translations',
-        'unit.textContent',
-      ],
-    });
+    return this.productUnitRepository
+      .createQueryBuilder('productUnit')
+      .where('productUnit.isDeleted = 0')
+      .andWhere('productUnit.productId =:productId', { productId })
+      .leftJoinAndSelect('productUnit.textContent', 'textContent')
+      .leftJoinAndSelect('textContent.translations', 'translations')
+      .leftJoinAndSelect('productUnit.unit', 'unit', 'unit.isDeleted = 0')
+      .leftJoinAndSelect('unit.textContent', 'unitTextContent')
+      .getMany();
   }
 }

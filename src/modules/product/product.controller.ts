@@ -8,7 +8,7 @@ import {
   Patch,
   Param,
   Delete,
-  Inject,
+  Req,
   UseGuards,
   UseInterceptors,
   UploadedFile,
@@ -19,7 +19,6 @@ import {
 } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { UpdateProductDto } from './dto/update-product.dto';
-import { REQUEST } from '@nestjs/core';
 import { Request } from 'express';
 import { DoesProductTaxExistGuard } from '../tax/guards/does-product-tax-exists.guard';
 import { TextContentService } from '../text-content/text-content.service';
@@ -58,7 +57,6 @@ export class ProductController {
     private readonly productUnitService: ProductUnitService,
     private readonly textContentService: TextContentService,
     private readonly translationService: TranslationService,
-    @Inject(REQUEST) private request: Request,
     @InjectRepository(Product)
     private readonly productRepository: Repository<Product>,
   ) {}
@@ -110,14 +108,18 @@ export class ProductController {
 
   @UseGuards(AuthGuard)
   @Get()
-  findAll(@Query() query: QueryFilter) {
-    return this.productService.findAll(query);
+  findAll(@Query() query: QueryFilter, @Req() req: Request) {
+    return this.productService.findAll(query, req);
   }
 
   @UseGuards(AuthGuard, DoesProductExistGuard)
   @Get(':id')
-  findOne(@Param('id') id: string, @Query() language: LanguageQuery) {
-    return this.productService.findOneWithRelations(+id, language);
+  findOne(
+    @Param('id') id: string,
+    @Query() language: LanguageQuery,
+    @Req() req: Request,
+  ) {
+    return this.productService.findOneWithRelations(+id, language, req);
   }
 
   @UseGuards(AuthGuard, IsAdminGuard, DoesProductExistGuard)

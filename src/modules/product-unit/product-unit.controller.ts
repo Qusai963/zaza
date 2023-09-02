@@ -47,7 +47,7 @@ export class ProductUnitController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.productUnitService.findOne(+id);
+    return this.productUnitService.findOneById(+id);
   }
 
   @UseGuards(
@@ -63,7 +63,9 @@ export class ProductUnitController {
     @Param('productUnitId') productUnitId: string,
     @Body('productUnit') updateProductUnitDto: UpdateProductUnitDto,
   ) {
-    const productUnit = await this.productUnitService.findOne(+productUnitId);
+    const productUnit = await this.productUnitService.findOneById(
+      +productUnitId,
+    );
 
     const textContentId = productUnit.textContentId;
 

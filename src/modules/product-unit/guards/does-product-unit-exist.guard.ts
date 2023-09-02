@@ -23,7 +23,7 @@ export class DoesProductUnitExistGuard implements CanActivate {
     const id = request.params.productUnitId;
     const language = getLanguageFromRequest(this.request);
 
-    const productUnit = await this.productUnitService.findOne(+id);
+    const productUnit = await this.productUnitService.findOneById(+id);
     if (!productUnit)
       throw new NotFoundException(PRODUCT_UNIT_NOT_FOUND.getMessage(language));
 

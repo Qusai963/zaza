@@ -22,6 +22,9 @@ import { ProductUnitService } from '../product-unit/product-unit.service';
 import { ProductUnit } from '../product-unit/entities/product-unit.entity';
 import { Unit } from '../unit/entities/unit.entity';
 import { Discount } from '../discount/entities/discount.entity';
+import { FavoriteProductService } from '../favorite-product/favorite-product.service';
+import { FavoriteProduct } from '../favorite-product/entities/favorite-product.entity';
+import { DiscountSpecificUser } from '../discount-specific-user/entities/discount-specific-user.entity';
 
 @Module({
   imports: [
@@ -36,6 +39,8 @@ import { Discount } from '../discount/entities/discount.entity';
       ProductUnit,
       Unit,
       Discount,
+      FavoriteProduct,
+      DiscountSpecificUser,
     ]),
     MulterModule.register({
       dest: '../uploads',
@@ -53,6 +58,7 @@ import { Discount } from '../discount/entities/discount.entity';
     UserService,
     ImagesService,
     ProductUnitService,
+    FavoriteProductService,
   ],
 })
 export class ProductModule {}

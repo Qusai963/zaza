@@ -77,30 +77,18 @@ export class TaxService {
 
   async update(id: number, updateTaxDto: UpdateTaxDto) {
     const tax = await this.findOne(id);
-    tax.isDeleted = true;
-    await this.taxRepository.save(tax);
 
-    const newTax = this.taxRepository.create({
-      percent: updateTaxDto.percent,
-      textContentId: tax.textContentId,
-    });
-
-    const newTaxSaved = await this.taxRepository.save(newTax);
-
-    const products = await this.productService.findByTaxId(id);
-
-    for (const product of products) {
-      product.taxId = newTax.id;
-    }
-    await this.productRepository.save(products);
-
-    return newTaxSaved;
+    return this.taxRepository.save({ ...tax, ...updateTaxDto });
   }
 
   async remove(id: number) {
     const tax = await this.findOne(id);
     tax.isDeleted = true;
-
+    const products = await this.productRepository.findBy({ taxId: id });
+    products.forEach((product) => {
+      product.taxId = null;
+    });
+    await this.productRepository.save(products);
     return this.taxRepository.save(tax);
   }
 }

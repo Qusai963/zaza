@@ -28,6 +28,7 @@ import { AuthGuard } from '../auth/guards/auth.guard';
 import { UpdateTextContentDto } from '../text-content/dto/update-text-content.dto';
 import { UpdateSecondTranslationDtoList } from '../translation/dto/update-translation.dto';
 import { ApiTags } from '@nestjs/swagger';
+import { LanguageQuery } from 'src/core/query/language.query';
 
 @ApiTags('tax')
 @Controller('tax')
@@ -56,7 +57,6 @@ export class TaxController {
         createTextContentDto,
       );
 
-      // TODO: apply validation on this array
       await this.translationService.createMany(
         createTranslationDtoList,
         createdTextContent.id,
@@ -70,21 +70,13 @@ export class TaxController {
   @UseGuards(AuthGuard, IsAdminGuard)
   @Get()
   findAll(@Query('code') code: string) {
-    try {
-      return this.taxService.findAll(code);
-    } catch (error) {
-      catchingError(error, this.request);
-    }
+    return this.taxService.findAll(code);
   }
 
   @UseGuards(AuthGuard, IsAdminGuard, DoesTaxExistInParamGuard)
   @Get(':id')
-  findOne(@Param('id') id: string, @Query('code') code: string) {
-    try {
-      return this.taxService.getOne(+id, code);
-    } catch (error) {
-      catchingError(error, this.request);
-    }
+  findOne(@Param('id') id: string, @Query() code: LanguageQuery) {
+    return this.taxService.getOne(+id, code.language);
   }
 
   @UseGuards(AuthGuard, IsAdminGuard, DoesTaxExistInParamGuard)
@@ -96,31 +88,23 @@ export class TaxController {
     @Body('translation')
     updateSecondTranslationDtoList: UpdateSecondTranslationDtoList[],
   ) {
-    try {
-      const tax = await this.taxService.findOne(+id);
-      const textContentId = tax.textContentId;
-      const updatedTextContent = await this.textContentService.update(
-        +textContentId,
-        updateTextContentDto,
-      );
+    const tax = await this.taxService.findOne(+id);
+    const textContentId = tax.textContentId;
+    const updatedTextContent = await this.textContentService.update(
+      +textContentId,
+      updateTextContentDto,
+    );
 
-      const updatedTranslation = await this.translationService.update(
-        textContentId,
-        updateSecondTranslationDtoList,
-      );
-      return this.taxService.update(+id, updateTaxDto);
-    } catch (error) {
-      catchingError(error, this.request);
-    }
+    const updatedTranslation = await this.translationService.update(
+      textContentId,
+      updateSecondTranslationDtoList,
+    );
+    return this.taxService.update(+id, updateTaxDto);
   }
 
   @UseGuards(DoesTaxExistInParamGuard, AuthGuard, IsAdminGuard)
   @Delete(':id')
   remove(@Param('id') id: string) {
-    try {
-      return this.taxService.remove(+id);
-    } catch (error) {
-      catchingError(error, this.request);
-    }
+    return this.taxService.remove(+id);
   }
 }

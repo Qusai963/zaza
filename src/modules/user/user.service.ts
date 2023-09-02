@@ -1,14 +1,10 @@
 import { Injectable, ForbiddenException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
-import { Like, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { PaginationWithSearch } from 'src/core/query/pagination-with-search.query';
-import { getOrderByCondition } from 'src/core/helpers/sort.helper';
-import { EMAIL_EXISTS } from 'src/core/error/messages/email-exists.message';
-import { LanguageQuery } from 'src/core/query/language.query';
-import { USER_NAME_EXISTS } from 'src/core/error/messages/user-name-exists.message';
+import { getOrderUserByCondition } from 'src/core/helpers/sort.helper';
 
 @Injectable()
 export class UserService {
@@ -24,14 +20,14 @@ export class UserService {
   async findAll(query: PaginationWithSearch) {
     if (!query.search) query.search = '';
 
-    const [users, count] = await this.userRepository.findAndCount({
-      take: query.limit,
-      skip: (query.page - 1) * query.limit,
-      order: getOrderByCondition(query.sort),
-      where: {
-        userName: Like(`%${query.search}%`),
-      },
-    });
+    const qb = this.userRepository.createQueryBuilder('user');
+    qb.where('user.userName LIKE :search', { search: `%${query.search}%` })
+      .andWhere('user.userName != :username', { username: 'admin' })
+      .orderBy(getOrderUserByCondition(query.sort))
+      .skip((query.page - 1) * query.limit)
+      .take(query.limit);
+
+    const [users, count] = await qb.getManyAndCount();
 
     return {
       count,

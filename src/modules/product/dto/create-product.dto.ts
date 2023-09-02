@@ -16,7 +16,7 @@ export class CreateProductDto {
   @Min(1)
   readonly parentCategoryId: number;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsNumber()
   @Min(1)
   readonly taxId: number;

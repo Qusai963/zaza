@@ -44,7 +44,7 @@ export class Product {
   @Column()
   textContentId: number;
 
-  @Column()
+  @Column({ nullable: true })
   taxId: number;
 
   @ManyToOne(() => Category, (category) => category.products, {

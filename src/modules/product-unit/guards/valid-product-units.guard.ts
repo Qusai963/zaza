@@ -33,7 +33,7 @@ export class ValidProductUnitsGuard implements CanActivate {
       productUnitList.map(async (createProductUnit) => {
         const productUnitId = createProductUnit.productUnitId;
         const amount = createProductUnit.amount;
-        const productUnit = await this.productUnitService.findOne(
+        const productUnit = await this.productUnitService.findOneById(
           +productUnitId,
         );
         if (!productUnit) {

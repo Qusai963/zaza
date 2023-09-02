@@ -17,6 +17,8 @@ import { Language } from '../language/entities/language.entity';
 import { Unit } from '../unit/entities/unit.entity';
 import { Category } from '../category/entities/category.entity';
 import { Discount } from '../discount/entities/discount.entity';
+import { FavoriteProduct } from '../favorite-product/entities/favorite-product.entity';
+import { DiscountSpecificUser } from '../discount-specific-user/entities/discount-specific-user.entity';
 
 @Module({
   imports: [
@@ -30,6 +32,8 @@ import { Discount } from '../discount/entities/discount.entity';
       Unit,
       Category,
       Discount,
+      FavoriteProduct,
+      DiscountSpecificUser,
     ]),
   ],
   controllers: [ProductUnitController],

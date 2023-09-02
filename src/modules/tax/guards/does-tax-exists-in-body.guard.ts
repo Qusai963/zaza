@@ -16,7 +16,7 @@ export class DoesTaxExistInBodyGuard implements CanActivate {
 
     const tax = await this.taxService.findOne(+taxId);
 
-    if (tax) return true;
+    if (tax || !taxId) return true;
 
     throw new NotFoundException('Tax not found');
   }

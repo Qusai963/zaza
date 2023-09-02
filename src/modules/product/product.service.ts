@@ -1,11 +1,15 @@
+import { FavoriteProductService } from './../favorite-product/favorite-product.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Injectable } from '@nestjs/common';
 import { Product } from './entities/product.entity';
-import { Repository } from 'typeorm';
+import { Brackets, Repository, ServerApiVersion } from 'typeorm';
 import { CreateProductDto } from './dto/create-product.dto';
 import { TextContent } from '../text-content/entities/text-content.entity';
 import { QueryFilter } from 'src/core/query/query-filter.query';
-import { getOrderByCondition } from 'src/core/helpers/sort.helper';
+import {
+  getOrderByCondition,
+  getOrderProductByCondition,
+} from 'src/core/helpers/sort.helper';
 import { getWhereByCondition } from 'src/core/helpers/search.helper';
 import { LanguageQuery } from 'src/core/query/language.query';
 import { ProductUnit } from '../product-unit/entities/product-unit.entity';
@@ -14,6 +18,10 @@ import { TaxIdDto } from './dto/taxId-dto';
 import { CategoryTypeEnum } from '../category/constants/category-enum';
 import { Category } from '../category/entities/category.entity';
 import { Discount } from '../discount/entities/discount.entity';
+import { Request } from 'express';
+import { getUserId } from '../user/helper/get-user-id.helper';
+import { FavoriteProduct } from '../favorite-product/entities/favorite-product.entity';
+import { DiscountSpecificUser } from '../discount-specific-user/entities/discount-specific-user.entity';
 
 @Injectable()
 export class ProductService {
@@ -26,6 +34,11 @@ export class ProductService {
     private readonly categoryRepository: Repository<Category>,
     @InjectRepository(ProductUnit)
     private readonly productUnitRepository: Repository<ProductUnit>,
+    private readonly favoriteProductService: FavoriteProductService,
+    @InjectRepository(FavoriteProduct)
+    private readonly favoriteProductRepository: Repository<FavoriteProduct>,
+    @InjectRepository(DiscountSpecificUser)
+    private readonly discountSpecificUserRepository: Repository<DiscountSpecificUser>,
   ) {}
   async create(createProductDto: CreateProductDto, textContent: TextContent) {
     const product = this.productRepository.create(createProductDto);
@@ -36,86 +49,144 @@ export class ProductService {
     return this.productRepository.findOneBy({ id: newProduct.id });
   }
 
-  findByTaxId(taxId: number) {
-    return this.productRepository.findBy({ taxId, isDeleted: 0 });
-  }
-
-  async findAll(query: QueryFilter, parentCategoryId: number = -1) {
-    const [products, count] = await this.productRepository.findAndCount({
-      where: [
+  async findAll(
+    query: QueryFilter,
+    req: Request,
+    parentCategoryId: number = -1,
+  ) {
+    const userId = getUserId(req);
+    let qb = this.productRepository
+      .createQueryBuilder('product')
+      .leftJoinAndSelect(
+        'product.discountSpecificUsers',
+        'discountSpecificUsers',
+      )
+      .leftJoinAndSelect('product.textContent', 'textContent')
+      .leftJoinAndSelect('textContent.translations', 'translations')
+      .leftJoinAndSelect(
+        'product.productUnits',
+        'productUnits',
+        'productUnits.isDeleted = 0',
+      )
+      .leftJoinAndSelect('productUnits.textContent', 'productUnitTextContent')
+      .leftJoinAndSelect('productUnits.unit', 'unit', 'unit.isDeleted = 0')
+      .leftJoinAndSelect('unit.textContent', 'unitTextContent')
+      .leftJoinAndSelect('unitTextContent.translations', 'unitTranslations')
+      .leftJoinAndSelect(
+        'productUnitTextContent.translations',
+        'productUnitTranslations',
+      )
+      .leftJoinAndSelect('product.discounts', 'discounts')
+      .where([
         {
           ...getWhereByCondition(query.search, parentCategoryId),
           isDeleted: 0,
         },
-      ],
-      order: getOrderByCondition(query.sort),
-      take: query.limit,
-      skip: (query.page - 1) * query.limit,
-      relations: [
-        'textContent',
-        'textContent.translations',
-        'productUnits',
-        'productUnits.textContent',
-        'productUnits.unit',
-        'productUnits.unit.textContent',
-        'productUnits.unit.textContent.translations',
-        'productUnits.textContent.translations',
-        'discounts',
-      ],
-    });
-
-    const translatedProducts = products.map((product) => {
-      const translation = product.textContent.translations.find(
-        (translation) => translation.code === query.language,
+      ])
+      .orderBy(getOrderProductByCondition(query.sort))
+      .take(query.limit)
+      .skip((query.page - 1) * query.limit);
+    if (query.search) {
+      qb = qb.andWhere(
+        new Brackets((qb) => {
+          if (query.search.split(':')[0] == 'name') {
+            if (query.language == 'de') {
+              qb.where('textContent.originalText LIKE :search', {
+                search: `%${query.search.split(':')[1]}%`,
+              });
+            } else {
+              qb.orWhere('translations.translation LIKE :search', {
+                search: `%${query.search.split(':')[1]}%`,
+              }).andWhere('translations.code = :languageCode', {
+                languageCode: query.language,
+              });
+            }
+          } else if (query.search.split(':')[0] == 'barCode') {
+            qb.where('product.barCode LIKE :search', {
+              search: `%${query.search.split(':')[1]}%`,
+            });
+          }
+        }),
       );
+    }
 
-      const translatedText = translation
-        ? translation.translation
-        : product.textContent.originalText;
+    const [products, count] = await qb.getManyAndCount();
 
-      const translatedProductUnits = product.productUnits.map((unit) => {
-        const unitTranslation = unit.textContent.translations.find(
+    const translatedProducts = await Promise.all(
+      products.map(async (product) => {
+        const translation = product.textContent.translations.find(
           (translation) => translation.code === query.language,
         );
 
-        const translatedUnitText = unitTranslation
-          ? unitTranslation.translation
-          : unit.textContent.originalText;
+        const translatedText = translation
+          ? translation.translation
+          : product.textContent.originalText;
 
-        // Include unit's text content translation
-        const translatedUnitContent = unit.unit.textContent.translations.find(
-          (translation) => translation.code === query.language,
+        const translatedProductUnits = await Promise.all(
+          product.productUnits.map(async (unit) => {
+            const unitTranslation = unit.textContent.translations.find(
+              (translation) => translation.code === query.language,
+            );
+
+            const translatedUnitText = unitTranslation
+              ? unitTranslation.translation
+              : unit.textContent.originalText;
+
+            const translatedUnitContent =
+              unit.unit.textContent.translations.find(
+                (translation) => translation.code === query.language,
+              );
+
+            const translatedUnitContentText = translatedUnitContent
+              ? translatedUnitContent.translation
+              : unit.unit.textContent.originalText;
+
+            return {
+              id: unit.id,
+              unitId: unit.unitId,
+              quantity: unit.quantity,
+              price: unit.price,
+              translatedText:
+                translatedUnitText || unit.textContent.originalText,
+              translatedUnitText:
+                translatedUnitContentText || unit.unit.textContent.originalText,
+            };
+          }),
         );
 
-        const translatedUnitContentText = translatedUnitContent
-          ? translatedUnitContent.translation
-          : unit.unit.textContent.originalText;
+        const discount = product.discounts[0];
+        const discountSpecificUsers = product.discountSpecificUsers[0];
+
+        const favoriteProduct =
+          await this.favoriteProductService.findOneByUserAndProduct(
+            userId,
+            product.id,
+          );
+
+        let discountPercent: number = 0;
+        let discountId: any = null;
+
+        if (discount) {
+          discountPercent = discount.percent;
+          discountId = discount.id;
+        } else if (discountSpecificUsers) {
+          discountPercent = discountSpecificUsers.percent;
+          discountId = discountSpecificUsers.id;
+        }
 
         return {
-          id: unit.id,
-          unitId: unit.unitId,
-          quantity: unit.quantity,
-          price: unit.price,
-          translatedText: translatedUnitText || unit.textContent.originalText,
-          translatedUnitText:
-            translatedUnitContentText || unit.unit.textContent.originalText,
+          id: product.id,
+          image: product.image,
+          barCode: +product.barCode,
+          parentCategoryId: product.parentCategoryId,
+          isFavorite: favoriteProduct ? true : false,
+          discount: discountPercent,
+          discountId: discountId,
+          translatedText: translatedText || product.textContent.originalText,
+          translatedProductUnits,
         };
-      });
-
-      const discounts = product.discounts.find(
-        (discount) => discount.isDeleted === false,
-      );
-
-      return {
-        id: product.id,
-        image: product.image,
-        parentCategoryId: product.parentCategoryId,
-        discount: discounts ? discounts.percent : 0,
-        discountId: discounts ? discounts.id : null,
-        translatedText: translatedText || product.textContent.originalText,
-        translatedProductUnits,
-      };
-    });
+      }),
+    );
 
     return {
       count,
@@ -134,7 +205,11 @@ export class ProductService {
       .andWhere('product.isDeleted = 0')
       .leftJoin('product.textContent', 'textContent')
 
-      .leftJoin('product.productUnits', 'productUnits')
+      .leftJoin(
+        'product.productUnits',
+        'productUnits',
+        'productUnits.isDeleted = 0',
+      )
       .leftJoin('productUnits.textContent', 'productUnitsTextContent')
       .select([
         'product.id',
@@ -157,6 +232,7 @@ export class ProductService {
       .leftJoin('category.textContent', 'categoryTextContent')
       .leftJoin('product.textContent', 'textContent')
       .leftJoin('textContent.translations', 'translations')
+      .leftJoin('product.favoriteProducts', 'favoriteProducts')
       .select([
         'product.id',
         'product.image',
@@ -175,24 +251,37 @@ export class ProductService {
       .getOne();
   }
 
-  async findOneWithRelations(id: number, language: LanguageQuery) {
-    const product = await this.productRepository.findOne({
-      where: { isDeleted: 0, id },
-      relations: [
-        'textContent',
-        'textContent.translations',
+  async findOneWithRelations(
+    id: number,
+    language: LanguageQuery,
+    req: Request,
+  ) {
+    const userId = getUserId(req);
+
+    const product = await this.productRepository
+      .createQueryBuilder('product')
+      .leftJoinAndSelect('product.textContent', 'textContent')
+      .leftJoinAndSelect('textContent.translations', 'translations')
+      .leftJoinAndSelect(
+        'product.productUnits',
         'productUnits',
-        'productUnits.textContent',
-        'productUnits.unit',
-        'productUnits.unit.textContent',
-        'productUnits.unit.textContent.translations',
-        'productUnits.textContent.translations',
-        'discounts',
-        'tax', // Include the tax relation
-        'tax.textContent',
-        'tax.textContent.translations',
-      ],
-    });
+        'productUnits.isDeleted = 0',
+      )
+      .leftJoinAndSelect('productUnits.textContent', 'productUnitTextContent')
+      .leftJoinAndSelect(
+        'productUnitTextContent.translations',
+        'productUnitTranslations',
+      )
+      .leftJoinAndSelect('productUnits.unit', 'unit', 'unit.isDeleted = 0')
+      .leftJoinAndSelect('unit.textContent', 'unitTextContent')
+      .leftJoinAndSelect('unitTextContent.translations', 'unitTranslations')
+      .leftJoinAndSelect('product.discounts', 'discounts')
+      .leftJoinAndSelect('product.tax', 'tax', 'product.taxId IS NOT NULL')
+      .leftJoinAndSelect('tax.textContent', 'taxTextContent')
+      .leftJoinAndSelect('taxTextContent.translations', 'taxTranslation')
+      .where('product.isDeleted = 0')
+      .andWhere('product.id = :id', { id })
+      .getOne();
 
     if (!product) {
       return null;
@@ -206,92 +295,72 @@ export class ProductService {
       ? translation.translation
       : product.textContent.originalText;
 
-    const translatedProductUnits = product.productUnits.map((unit) => {
-      const unitTranslation = unit.textContent.translations.find(
+    const translatedProductUnits = product.productUnits.map((productUnit) => {
+      const unitTranslation = productUnit.textContent.translations.find(
         (translation) => translation.code === language.language,
       );
 
       const translatedUnitText = unitTranslation
         ? unitTranslation.translation
-        : unit.textContent.originalText;
+        : productUnit.textContent.originalText;
 
-      const translatedUnitContent = unit.unit.textContent.translations.find(
-        (translation) => translation.code === language.language,
-      );
+      const translatedUnitContent =
+        productUnit.unit.textContent.translations.find(
+          (translation) => translation.code === language.language,
+        );
 
       const translatedUnitContentText = translatedUnitContent
         ? translatedUnitContent.translation
-        : unit.unit.textContent.originalText;
+        : productUnit.unit.textContent.originalText;
 
       return {
-        id: unit.id,
-        unitId: unit.unitId,
-        quantity: unit.quantity,
-        price: unit.price,
-        translatedText: translatedUnitText || unit.textContent.originalText,
+        id: productUnit.id,
+        unitId: productUnit.unitId,
+        quantity: productUnit.quantity,
+        price: productUnit.price,
+        translatedText:
+          translatedUnitText || productUnit.textContent.originalText,
         translatedUnitText:
-          translatedUnitContentText || unit.unit.textContent.originalText,
+          translatedUnitContentText ||
+          productUnit.unit.textContent.originalText,
       };
     });
 
-    const discounts = product.discounts.find(
-      (discount) => discount.isDeleted === false,
-    );
+    const discount = product.discounts[0];
 
-    const taxTranslation = product.tax.textContent.translations.find(
-      (translation) => translation.code === language.language,
-    );
+    let taxTranslation = null,
+      translatedTaxPercent = null,
+      taxPercent = 0;
+    if (product.tax) {
+      taxTranslation = product.tax.textContent.translations.find(
+        (translation) => translation.code === language.language,
+      );
 
-    const translatedTaxPercent = taxTranslation
-      ? taxTranslation.translation
-      : product.tax.textContent.originalText;
+      translatedTaxPercent = taxTranslation
+        ? taxTranslation.translation
+        : product.tax.textContent.originalText;
+
+      taxPercent = product.tax.percent;
+    }
+
+    const isFavorite =
+      await this.favoriteProductService.findOneByUserAndProduct(userId, id);
+
+    if (isFavorite) product['isFavorite'] = true;
+    else product['isFavorite'] = false;
 
     return {
       id: product.id,
       image: product.image,
       parentCategoryId: product.parentCategoryId,
-      discount: discounts ? discounts.percent : 0,
-      discountId: discounts ? discounts.id : null,
+      isFavorite: product['isFavorite'],
+      discount: discount ? discount.percent : 0,
+      discountId: discount ? discount.id : null,
       translatedText: translatedText || product.textContent.originalText,
       translatedProductUnits,
       translatedTaxPercent,
-      taxPercent: product.tax.percent,
+      taxPercent,
     };
-  }
-
-  async findAllAndCountByCategoryId(
-    parentCategoryId: number,
-    limit: number,
-    page: number,
-    code: string,
-  ) {
-    const [products, totalCount] = await this.productRepository.findAndCount({
-      where: { parentCategoryId, isDeleted: 0 },
-      take: limit,
-      skip: (page - 1) * limit,
-      relations: ['textContent', 'textContent.translations'],
-    });
-
-    const translatedProducts = products.map((product) => {
-      const translation = product.textContent.translations.find(
-        (translation) => translation.code === code,
-      );
-
-      const translatedText = translation
-        ? translation.translation
-        : product.textContent.originalText;
-
-      return {
-        id: product.id,
-        barCode: product.barCode,
-        image: product.image,
-        parentCategoryId: product.parentCategoryId,
-        textContentId: product.textContentId,
-        translatedText: translatedText || product.textContent.originalText,
-      };
-    });
-
-    return { products: translatedProducts, count: totalCount };
   }
 
   findOneWithTaxRelationsForUpdating(id: number) {
@@ -300,7 +369,7 @@ export class ProductService {
       .where('product.id = :id', { id })
       .andWhere('product.isDeleted = 0')
       .leftJoin('product.textContent', 'textContent')
-      .leftJoin('product.tax', 'tax')
+      .leftJoin('product.tax', 'tax', 'product.taxId IS NOT NULL')
       .leftJoin('tax.textContent', 'taxTextContent')
       .select([
         'product.id',
@@ -327,7 +396,7 @@ export class ProductService {
         'productUnitsTextContent.translations',
         'productUnitsTranslations',
       )
-      .leftJoin('productUnits.unit', 'unit')
+      .leftJoin('productUnits.unit', 'unit', 'unit.isDeleted = 0')
       .leftJoin('unit.textContent', 'unitTextContent')
       .select([
         'product.id',
@@ -345,41 +414,9 @@ export class ProductService {
   }
 
   async updateProductTax(productId: number, taxIdDto: TaxIdDto) {
-    const { id, ...product } = await this.findOne(productId);
-    const newTaxId = taxIdDto.taxId;
-
-    const cratedNewProduct = this.productRepository.create({
-      ...product,
-      taxId: newTaxId,
-    });
-
-    const savedNewProduct = await this.productRepository.save(cratedNewProduct);
-
-    const productUnits = await this.productUnitRepository.findBy({
-      productId,
-      isDeleted: 0,
-    });
-
-    if (productUnits.length > 0)
-      productUnits.forEach(
-        (productUnit) => (productUnit.productId = +savedNewProduct.id),
-      );
-
-    const discounts = await this.discountRepository.findBy({
-      productId,
-      isDeleted: false,
-    });
-
-    if (discounts.length > 0)
-      discounts.forEach(
-        (discount) => (discount.productId = +savedNewProduct.id),
-      );
-
-    await this.productUnitRepository.save(productUnits);
-
-    product.isDeleted = 1;
-    await this.productRepository.save({ id, ...product });
-
+    const product = await this.findOne(productId);
+    product.taxId = taxIdDto.taxId;
+    await this.productRepository.save(product);
     return { message: 'Product updated successfully' };
   }
 
@@ -411,20 +448,32 @@ export class ProductService {
   async remove(id: number) {
     const product = await this.productRepository.findOne({
       where: { id },
-      relations: { productUnits: true, discounts: true, category: true },
+      relations: {
+        productUnits: true,
+        discounts: true,
+        category: true,
+        favoriteProducts: true,
+        discountSpecificUsers: true,
+      },
     });
     product.isDeleted = 1;
     const savedProduct = await this.productRepository.save(product);
 
     for (const discount of product.discounts) {
-      discount.isDeleted = true;
+      await this.discountRepository.remove(discount);
+    }
+
+    for (const favoriteProduct of product.favoriteProducts) {
+      await this.favoriteProductRepository.remove(favoriteProduct);
+    }
+
+    for (const discountSpecificUser of product.discountSpecificUsers) {
+      await this.discountSpecificUserRepository.remove(discountSpecificUser);
     }
 
     for (const productUnit of product.productUnits) {
       productUnit.isDeleted = 1;
     }
-
-    await this.discountRepository.save(product.discounts);
     await this.productUnitRepository.save(product.productUnits);
 
     const anotherProduct = await this.productRepository.findOne({
