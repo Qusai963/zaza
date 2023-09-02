@@ -9,7 +9,9 @@ import { QueryFilter } from 'src/core/query/query-filter.query';
 import { Product } from '../product/entities/product.entity';
 import { getWhereByCondition } from 'src/core/helpers/search.helper';
 import { getOrderByCondition } from 'src/core/helpers/sort.helper';
-import { tr } from '@faker-js/faker';
+import { FavoriteProductService } from '../favorite-product/favorite-product.service';
+import { Request } from 'express';
+import { getUserId } from '../user/helper/get-user-id.helper';
 
 @Injectable()
 export class DiscountService {
@@ -18,21 +20,16 @@ export class DiscountService {
     private readonly discountRepository: Repository<Discount>,
     @InjectRepository(Product)
     private readonly productRepository: Repository<Product>,
+    private readonly favoriteProductService: FavoriteProductService,
   ) {}
   async create(createDiscountDtoList: CreateDiscountDto[]) {
     const discountsToCreate = await Promise.all(
       createDiscountDtoList.map(async (dto) => {
-        const discountExists = await this.discountRepository.findOne({
-          where: {
-            productId: dto.productId,
-            isDeleted: false,
-          },
-        });
+        const discountExists = await this.findOneByProductId(dto.productId);
 
-        if (discountExists) {
-          discountExists.isDeleted = true;
-          await this.discountRepository.save(discountExists);
-        }
+        if (discountExists)
+          await this.discountRepository.remove(discountExists);
+
         const discount = this.discountRepository.create(dto);
         return discount;
       }),
@@ -41,11 +38,10 @@ export class DiscountService {
     return this.discountRepository.save(discountsToCreate);
   }
 
-  async findAll(query: QueryFilter) {
+  // TODO: PRODUCT
+  async findAll(query: QueryFilter, req: Request) {
+    const userId = getUserId(req);
     const prodIds = await this.discountRepository.find({
-      where: {
-        percent: MoreThan(0),
-      },
       select: {
         productId: true,
       },
@@ -79,91 +75,91 @@ export class DiscountService {
       skip: (query.page - 1) * query.limit,
     });
 
-    const translatedProducts = products.map((product) => {
-      const translation = product.textContent.translations.find(
-        (translation) => translation.code === query.language,
-      );
-
-      const translatedText = translation
-        ? translation.translation
-        : product.textContent.originalText;
-
-      const translatedProductUnits = product.productUnits.map((unit) => {
-        const unitTranslation = unit.textContent.translations.find(
+    const translatedProducts = await Promise.all(
+      products.map(async (product) => {
+        const translation = product.textContent.translations.find(
           (translation) => translation.code === query.language,
         );
 
-        const translatedUnitText = unitTranslation
-          ? unitTranslation.translation
-          : unit.textContent.originalText;
+        const translatedText = translation
+          ? translation.translation
+          : product.textContent.originalText;
 
-        // Include unit's text content translation
-        const translatedUnitContent = unit.unit.textContent.translations.find(
-          (translation) => translation.code === query.language,
-        );
+        const translatedProductUnits = product.productUnits.map((unit) => {
+          const unitTranslation = unit.textContent.translations.find(
+            (translation) => translation.code === query.language,
+          );
 
-        const translatedUnitContentText = translatedUnitContent
-          ? translatedUnitContent.translation
-          : unit.unit.textContent.originalText;
+          const translatedUnitText = unitTranslation
+            ? unitTranslation.translation
+            : unit.textContent.originalText;
+
+          // Include unit's text content translation
+          const translatedUnitContent = unit.unit.textContent.translations.find(
+            (translation) => translation.code === query.language,
+          );
+
+          const translatedUnitContentText = translatedUnitContent
+            ? translatedUnitContent.translation
+            : unit.unit.textContent.originalText;
+
+          return {
+            id: unit.id,
+            unitId: unit.unitId,
+            quantity: unit.quantity,
+            price: unit.price,
+            translatedText: translatedUnitText || unit.textContent.originalText,
+            translatedUnitText:
+              translatedUnitContentText || unit.unit.textContent.originalText,
+          };
+        });
+
+        const discount = product.discounts[0];
+
+        const favoriteProduct =
+          await this.favoriteProductService.findOneByUserAndProduct(
+            userId,
+            product.id,
+          );
 
         return {
-          id: unit.id,
-          unitId: unit.unitId,
-          quantity: unit.quantity,
-          price: unit.price,
-          translatedText: translatedUnitText || unit.textContent.originalText,
-          translatedUnitText:
-            translatedUnitContentText || unit.unit.textContent.originalText,
+          id: product.id,
+          image: product.image,
+          parentCategoryId: product.parentCategoryId,
+          isFavorite: favoriteProduct ? true : false,
+          discount: discount ? discount.percent : 0,
+          discountId: discount ? discount.id : null,
+          translatedText: translatedText || product.textContent.originalText,
+          translatedProductUnits,
         };
-      });
-
-      const discounts = product.discounts.find(
-        (discount) => discount.isDeleted === false,
-      );
-
-      return {
-        id: product.id,
-        image: product.image,
-        parentCategoryId: product.parentCategoryId,
-        discount: discounts ? discounts.percent : 0,
-        discountId: discounts ? discounts.id : null,
-        translatedText: translatedText || product.textContent.originalText,
-        translatedProductUnits,
-      };
-    });
+      }),
+    );
 
     return {
       count,
       translatedProducts,
     };
   }
-  findOne(id: number) {
+
+  findOneByProductId(productId: number) {
+    return this.discountRepository.findOneBy({
+      productId,
+    });
+  }
+
+  findOneById(id: number) {
     return this.discountRepository.findOneBy({
       id,
-      isDeleted: false,
     });
   }
 
   async update(discountId: number, updateDiscountDto: UpdateDiscountDto) {
-    const { id, ...discount } = await this.findOne(discountId);
-
-    const createNewDiscount = this.discountRepository.create({
-      ...discount,
-      percent: updateDiscountDto.percent,
-    });
-
-    discount.isDeleted = true;
-
-    await this.discountRepository.save({ id, ...discount });
-
-    return this.discountRepository.save(createNewDiscount);
+    const discount = await this.findOneById(discountId);
+    return this.discountRepository.save({ ...discount, ...updateDiscountDto });
   }
 
   async remove(id: number) {
-    const discount = await this.findOne(id);
-
-    discount.isDeleted = true;
-
-    return this.discountRepository.save(discount);
+    const discount = await this.findOneById(id);
+    return this.discountRepository.remove(discount);
   }
 }

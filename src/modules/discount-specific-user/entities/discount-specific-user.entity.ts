@@ -21,9 +21,6 @@ export class DiscountSpecificUser {
   @Column()
   percent: number;
 
-  @Column({ type: 'tinyint', width: 1 })
-  isDeleted: number;
-
   @CreateDateColumn()
   createdAt: Date;
 

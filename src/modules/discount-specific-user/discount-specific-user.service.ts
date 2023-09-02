@@ -24,10 +24,9 @@ export class DiscountSpecificUserService {
           dto.productId,
         );
 
-        if (discountExists) {
-          discountExists.isDeleted = 1;
-          await this.discountSpecificUserRepository.save(discountExists);
-        }
+        if (discountExists)
+          await this.discountSpecificUserRepository.remove(discountExists);
+
         const discount = this.discountSpecificUserRepository.create({
           ...dto,
           userId,
@@ -44,7 +43,6 @@ export class DiscountSpecificUserService {
     const [discountSpecificUser, count] =
       await this.discountSpecificUserRepository
         .createQueryBuilder('discountSpecificUser')
-        .where('discountSpecificUser.isDeleted = 0')
         .leftJoin('discountSpecificUser.user', 'user')
         .leftJoin('discountSpecificUser.product', 'product')
         .leftJoin('product.textContent', 'textContent')
@@ -59,6 +57,7 @@ export class DiscountSpecificUserService {
           'product.id',
           'textContent.originalText',
         ])
+        .where('product.isDeleted = 0')
         .take(pagination.limit)
         .skip((pagination.page - 1) * pagination.limit)
         .orderBy(getOrderDiscountSpecificUserByCondition(pagination.sort))
@@ -71,7 +70,6 @@ export class DiscountSpecificUserService {
     return this.discountSpecificUserRepository.findOneBy({
       userId,
       productId,
-      isDeleted: 0,
     });
   }
 
@@ -79,7 +77,6 @@ export class DiscountSpecificUserService {
     const [discountSpecificUser, count] =
       await this.discountSpecificUserRepository
         .createQueryBuilder('discountSpecificUser')
-        .where('discountSpecificUser.isDeleted = 0')
         .andWhere('discountSpecificUser.userId = :userId', { userId })
         .leftJoin('discountSpecificUser.product', 'product')
         .leftJoin('product.textContent', 'textContent')
@@ -92,37 +89,29 @@ export class DiscountSpecificUserService {
           'product.image',
           'textContent.originalText',
         ])
+        .where('product.isDeleted = 0')
         .getManyAndCount();
 
     return { count, discountSpecificUser };
   }
 
   findOneById(id: number) {
-    return this.discountSpecificUserRepository.findOneBy({ id, isDeleted: 0 });
+    return this.discountSpecificUserRepository.findOneBy({ id });
   }
 
   async update(
     discountId: number,
     updateDiscountSpecificUserDto: UpdateDiscountSpecificUserDto,
   ) {
-    const { id, ...discount } = await this.findOneById(discountId);
-
-    const newDiscount = this.discountSpecificUserRepository.create({
+    const discount = await this.findOneById(discountId);
+    return this.discountSpecificUserRepository.save({
       ...discount,
-      percent: updateDiscountSpecificUserDto.percent,
+      ...updateDiscountSpecificUserDto,
     });
-
-    discount.isDeleted = 1;
-    await this.discountSpecificUserRepository.save({ id, ...discount });
-
-    return this.discountSpecificUserRepository.save(newDiscount);
   }
 
   async remove(id: number) {
     const discount = await this.findOneById(id);
-
-    discount.isDeleted = 1;
-
-    return this.discountSpecificUserRepository.save(discount);
+    return this.discountSpecificUserRepository.remove(discount);
   }
 }

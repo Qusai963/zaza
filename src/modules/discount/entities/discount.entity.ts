@@ -19,15 +19,14 @@ export class Discount {
   @Column('double')
   percent: number;
 
-  @Column({ default: false })
-  isDeleted: boolean;
-
   @CreateDateColumn()
   createdAt: Date;
 
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @ManyToOne(() => Product, (product) => product.discounts)
+  @ManyToOne(() => Product, (product) => product.discounts, {
+    onDelete: 'CASCADE',
+  })
   product: Product;
 }

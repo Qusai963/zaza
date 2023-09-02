@@ -8,6 +8,7 @@ import {
   Param,
   Delete,
   UseGuards,
+  Req,
 } from '@nestjs/common';
 import { DiscountService } from './discount.service';
 import { CreateDiscountDto } from './dto/create-discount.dto';
@@ -17,6 +18,7 @@ import { IsAdminGuard } from '../auth/guards/is-admin.guard';
 import { AreProductsExistGuard } from '../product/guards/are-products-exist.guard';
 import { QueryFilter } from 'src/core/query/query-filter.query';
 import { DoesDiscountExistGuard } from './guards/does-discount-exist.guard';
+import { Request } from 'express';
 
 @Controller('discount')
 export class DiscountController {
@@ -32,8 +34,8 @@ export class DiscountController {
 
   @UseGuards(AuthGuard)
   @Get()
-  findAll(@Query() query: QueryFilter) {
-    return this.discountService.findAll(query);
+  findAll(@Query() query: QueryFilter, @Req() req: Request) {
+    return this.discountService.findAll(query, req);
   }
 
   @UseGuards(AuthGuard, IsAdminGuard, DoesDiscountExistGuard)

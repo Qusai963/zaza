@@ -25,7 +25,7 @@ export class DoesDiscountExistGuard implements CanActivate {
 
     if (!discountId) return true;
 
-    const discount = await this.discountService.findOne(+discountId);
+    const discount = await this.discountService.findOneById(+discountId);
 
     if (!discount)
       throw new NotFoundException(DISCOUNT_NOT_FOUND.getMessage(language));
