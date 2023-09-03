@@ -14,10 +14,7 @@ import { CategoryTypeEnum } from '../constants/category-enum';
 @Entity()
 export class Category {
   @PrimaryGeneratedColumn()
-  id: number;
-
-  @Column({ default: 0 })
-  productsNumber: number;
+  id: number;ح
 
   @Column({ default: null })
   parentCategoryId: number;

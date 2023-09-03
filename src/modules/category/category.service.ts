@@ -1,7 +1,7 @@
 import { ProductService } from './../product/product.service';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { IsNull, Repository, Not, In } from 'typeorm';
+import { Repository, Not, In } from 'typeorm';
 import { Category } from './entities/category.entity';
 import { TextContent } from '../text-content/entities/text-content.entity';
 import { CategoryTypeEnum } from './constants/category-enum';
@@ -46,21 +46,20 @@ export class CategoryService {
     const page = query.page;
     const code = query.language;
 
-    const categories = await this.categoryRepository.findAndCount({
-      where: {
-        parentCategoryId: IsNull(),
-        isDeleted: false,
-      },
-      take: limit,
-      skip: (page - 1) * limit,
-      relations: ['textContent', 'textContent.translations'],
-    });
+    const categories = await this.categoryRepository
+      .createQueryBuilder('category')
+      .where('category.parentCategoryId IS NULL')
+      .andWhere('category.isDeleted = :isDeleted', { isDeleted: false })
+      .take(limit)
+      .skip((page - 1) * limit)
+      .leftJoinAndSelect('category.textContent', 'textContent')
+      .leftJoinAndSelect('textContent.translations', 'translations')
+      .getManyAndCount();
 
     const translatedCategories = categories[0].map((category) => {
       const translation = category.textContent.translations.find(
         (translation) => translation.code === code,
       );
-
       const translatedText = translation
         ? translation.translation
         : category.textContent.originalText;
@@ -68,7 +67,7 @@ export class CategoryService {
       return {
         id: category.id,
         typeName: category.typeName,
-        productsNumber: category.productsNumber,
+        productsNumber: 0,
         image: category.image,
         parentCategoryId: category.parentCategoryId,
         textContentId: category.textContentId,
@@ -124,7 +123,7 @@ export class CategoryService {
           : category.textContent.originalText;
         return {
           id: category.id,
-          productsNumber: category.productsNumber,
+          productsNumber: 0,
           typeName: category.typeName,
           parentCategoryId: category.parentCategoryId,
           image: category.image,
@@ -137,7 +136,7 @@ export class CategoryService {
         translatedText: translatedTextForMainCategory,
         id: category.id,
         typeName: category.typeName,
-        productsNumber: category.productsNumber,
+        productsNumber: 0,
         parentCategoryId: category.parentCategoryId,
         image: category.image,
 
@@ -158,7 +157,7 @@ export class CategoryService {
         typeName: category.typeName,
         id: category.id,
         parentCategoryId: category.parentCategoryId,
-        productsNumber: category.productsNumber,
+        productsNumber: 0,
         image: category.image,
         translatedText: translatedTextForMainCategory,
         count: numberOfProducts,
@@ -169,7 +168,7 @@ export class CategoryService {
       id: category.id,
       parentCategoryId: category.parentCategoryId,
       typeName: category.typeName,
-      productsNumber: category.productsNumber,
+      productsNumber: 0,
       image: category.image,
       translatedText: translatedTextForMainCategory,
     };
@@ -206,7 +205,7 @@ export class CategoryService {
       return {
         id: category.id,
         type: category.typeName,
-        productsNumber: category.productsNumber,
+        productsNumber: 0,
         parentCategoryId: category.parentCategoryId,
         textContentId: category.textContentId,
         translatedText: translatedText || category.textContent.originalText,

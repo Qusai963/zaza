@@ -3,21 +3,22 @@ import { CreateDiscountDto } from './dto/create-discount.dto';
 import { UpdateDiscountDto } from './dto/update-discount.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Discount } from './entities/discount.entity';
-import { In, MoreThan, Repository } from 'typeorm';
-import { PaginationWithLanguage } from 'src/core/query/pagination-with-language.query';
+import { In, Repository } from 'typeorm';
 import { QueryFilter } from 'src/core/query/query-filter.query';
 import { Product } from '../product/entities/product.entity';
-import { getWhereByCondition } from 'src/core/helpers/search.helper';
 import { getOrderByCondition } from 'src/core/helpers/sort.helper';
 import { FavoriteProductService } from '../favorite-product/favorite-product.service';
 import { Request } from 'express';
 import { getUserId } from '../user/helper/get-user-id.helper';
+import { DiscountSpecificUser } from '../discount-specific-user/entities/discount-specific-user.entity';
 
 @Injectable()
 export class DiscountService {
   constructor(
     @InjectRepository(Discount)
     private readonly discountRepository: Repository<Discount>,
+    @InjectRepository(DiscountSpecificUser)
+    private readonly discountSpecificUserRepository: Repository<DiscountSpecificUser>,
     @InjectRepository(Product)
     private readonly productRepository: Repository<Product>,
     private readonly favoriteProductService: FavoriteProductService,
@@ -38,19 +39,34 @@ export class DiscountService {
     return this.discountRepository.save(discountsToCreate);
   }
 
-
   async findAll(query: QueryFilter, req: Request) {
     const userId = getUserId(req);
-    const prodIds = await this.discountRepository.find({
+    const discountProductIds = await this.discountRepository.find({
       select: {
         productId: true,
       },
     });
 
+    const discountSpecificProductIds =
+      await this.discountSpecificUserRepository.find({
+        where: { userId },
+        select: {
+          productId: true,
+        },
+      });
+
     const Ids: number[] = [];
 
-    prodIds.forEach((id) => {
-      Ids.push(id.productId);
+    discountProductIds.forEach((id) => {
+      if (!Ids.includes(id.productId)) {
+        Ids.push(id.productId);
+      }
+    });
+
+    discountSpecificProductIds.forEach((id) => {
+      if (!Ids.includes(id.productId)) {
+        Ids.push(id.productId);
+      }
     });
 
     const [products, count] = await this.productRepository.findAndCount({

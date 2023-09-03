@@ -17,6 +17,7 @@ import { Translation } from '../translation/entities/translation.entity';
 import { DiscountService } from '../discount/discount.service';
 import { Discount } from '../discount/entities/discount.entity';
 import { Product } from '../product/entities/product.entity';
+import { DiscountSpecificUser } from '../discount-specific-user/entities/discount-specific-user.entity';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { Product } from '../product/entities/product.entity';
       Translation,
       Discount,
       Product,
+      DiscountSpecificUser,
     ]),
   ],
   controllers: [OrderController],
