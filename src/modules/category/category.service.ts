@@ -53,27 +53,35 @@ export class CategoryService {
       .take(limit)
       .skip((page - 1) * limit)
       .leftJoinAndSelect('category.textContent', 'textContent')
+      .leftJoinAndSelect('category.categories', 'categories')
       .leftJoinAndSelect('textContent.translations', 'translations')
       .getManyAndCount();
 
-    const translatedCategories = categories[0].map((category) => {
-      const translation = category.textContent.translations.find(
-        (translation) => translation.code === code,
-      );
-      const translatedText = translation
-        ? translation.translation
-        : category.textContent.originalText;
+    const translatedCategories = await Promise.all(
+      categories[0].map(async (category) => {
+        const translation = category.textContent.translations.find(
+          (translation) => translation.code === code,
+        );
+        const translatedText = translation
+          ? translation.translation
+          : category.textContent.originalText;
 
-      return {
-        id: category.id,
-        typeName: category.typeName,
-        productsNumber: 0,
-        image: category.image,
-        parentCategoryId: category.parentCategoryId,
-        textContentId: category.textContentId,
-        translatedText: translatedText || category.textContent.originalText,
-      };
-    });
+        const productsNumber = await this.dfsCountProducts(category); // Calculate productsNumber
+
+        // Create an object with the required properties
+        const categoryObject = {
+          id: category.id,
+          typeName: category.typeName,
+          productsNumber, // Include productsNumber here
+          image: category.image,
+          parentCategoryId: category.parentCategoryId,
+          textContentId: category.textContentId,
+          translatedText: translatedText || category.textContent.originalText,
+        };
+
+        return categoryObject;
+      }),
+    );
 
     return {
       count: categories[1],
@@ -113,24 +121,28 @@ export class CategoryService {
     const numberOfCategories = hasCategories[1];
 
     if (numberOfCategories > 0) {
-      const translatedCategories = hasCategories[0].map((category) => {
-        const translation = category.textContent.translations.find(
-          (translation) => translation.code === code,
-        );
+      const translatedCategories = await Promise.all(
+        hasCategories[0].map(async (category) => {
+          const translation = category.textContent.translations.find(
+            (translation) => translation.code === code,
+          );
 
-        const translatedText = translation
-          ? translation.translation
-          : category.textContent.originalText;
-        return {
-          id: category.id,
-          productsNumber: 0,
-          typeName: category.typeName,
-          parentCategoryId: category.parentCategoryId,
-          image: category.image,
-          textContentId: category.textContentId,
-          translatedText: translatedText || category.textContent.originalText,
-        };
-      });
+          const translatedText = translation
+            ? translation.translation
+            : category.textContent.originalText;
+
+          const productsNumber = await this.dfsCountProducts(category); // Calculate productsNumber
+          return {
+            id: category.id,
+            productsNumber: 0,
+            typeName: category.typeName,
+            parentCategoryId: category.parentCategoryId,
+            image: category.image,
+            textContentId: category.textContentId,
+            translatedText: translatedText || category.textContent.originalText,
+          };
+        }),
+      );
 
       return {
         translatedText: translatedTextForMainCategory,
@@ -152,18 +164,19 @@ export class CategoryService {
     const { translatedProducts, count: numberOfProducts } =
       await this.productService.findAll(queryFilter, req, id);
 
-    if (numberOfProducts > 0)
+    if (numberOfProducts > 0) {
+      const productsNumber = await this.dfsCountProducts(category); // Calculate productsNumber
       return {
         typeName: category.typeName,
         id: category.id,
         parentCategoryId: category.parentCategoryId,
-        productsNumber: 0,
+        productsNumber,
         image: category.image,
         translatedText: translatedTextForMainCategory,
         count: numberOfProducts,
         translatedProducts,
       };
-
+    }
     return {
       id: category.id,
       parentCategoryId: category.parentCategoryId,
@@ -205,7 +218,6 @@ export class CategoryService {
       return {
         id: category.id,
         type: category.typeName,
-        productsNumber: 0,
         parentCategoryId: category.parentCategoryId,
         textContentId: category.textContentId,
         translatedText: translatedText || category.textContent.originalText,
@@ -296,5 +308,32 @@ export class CategoryService {
         await this.categoryRepository.save(parentCategory);
       }
     }
+  }
+
+  async dfsCountProducts(category: Category) {
+    // Mark the function as async
+    // Base case: if category has no sub-categories, return the number of products in this category
+    if (!category.categories || category.categories.length === 0) {
+      return this.productRepository
+        .createQueryBuilder('product')
+        .where('product.parentCategoryId = :categoryId', {
+          categoryId: category.id,
+        })
+        .andWhere('product.isDeleted = 0')
+        .getCount();
+    }
+
+    // Recursive case: if category has sub-categories, count the products in this category and all sub-categories
+    let productCount = await this.productRepository
+      .createQueryBuilder('product')
+      .where('product.parentCategoryId = :categoryId', {
+        categoryId: category.id,
+      })
+      .andWhere('product.isDeleted = 0')
+      .getCount();
+    for (const subCategory of category.categories) {
+      productCount += await this.dfsCountProducts(subCategory);
+    }
+    return productCount;
   }
 }

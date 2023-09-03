@@ -4,7 +4,6 @@ import {
   Get,
   Post,
   Body,
-  Patch,
   Param,
   Delete,
   Inject,
@@ -13,16 +12,12 @@ import {
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
-import { catchingError } from 'src/core/error/helper/catching-error';
 import { Request } from 'express';
 import { ApiTags } from '@nestjs/swagger';
 import { AccessTokenGuard } from '../auth/guards/accessToken.guard';
 import { IsAdminGuard } from '../auth/guards/is-admin.guard';
 import { PaginationWithSearch } from 'src/core/query/pagination-with-search.query';
 import { UserNotFoundGuard } from './guards/user-not-found.guard';
-import { DoesUserExistGuard } from './guards/does-user-exist.guard';
-import { LanguageQuery } from 'src/core/query/language.query';
 
 @ApiTags('user')
 @Controller('user')

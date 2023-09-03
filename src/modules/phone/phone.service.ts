@@ -23,19 +23,12 @@ export class PhoneService {
     return { phones };
   }
 
-  findAll() {
-    return `This action returns all phone`;
-  }
-
   findOne(id: number) {
-    return `This action returns a #${id} phone`;
+    return this.phoneRepository.findOneBy({ id });
   }
 
-  update(id: number, updatePhoneDto: UpdatePhoneDto) {
-    return `This action updates a #${id} phone`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} phone`;
+  async remove(id: number) {
+    const phone = await this.findOne(id);
+    return this.phoneRepository.remove(phone);
   }
 }

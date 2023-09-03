@@ -53,9 +53,8 @@ export class AuthService {
     });
   }
 
-  public async profile(userId: number) {
-    const user = await this.userService.findById(userId);
-    return user;
+  profile(userId: number) {
+    return this.userService.profile(userId);
   }
 
   hashData(data: string) {

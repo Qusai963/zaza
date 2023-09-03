@@ -4,6 +4,7 @@ import {
   ExecutionContext,
   NotFoundException,
   Inject,
+  ForbiddenException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { REQUEST } from '@nestjs/core';
@@ -39,7 +40,7 @@ export class DoesParentCategorySafeForCategoriesGuard implements CanActivate {
       throw new NotFoundException(CATEGORY_NOT_FOUND.getMessage(language));
 
     if (parentCategory.typeName === CategoryTypeEnum.LEAF)
-      throw new NotFoundException('Invalid category');
+      throw new ForbiddenException('Invalid category');
 
     if (parentCategory.typeName !== CategoryTypeEnum.NODE) {
       parentCategory.typeName = CategoryTypeEnum.NODE;

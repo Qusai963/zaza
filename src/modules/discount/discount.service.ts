@@ -6,7 +6,10 @@ import { Discount } from './entities/discount.entity';
 import { In, Repository } from 'typeorm';
 import { QueryFilter } from 'src/core/query/query-filter.query';
 import { Product } from '../product/entities/product.entity';
-import { getOrderByCondition } from 'src/core/helpers/sort.helper';
+import {
+  getOrderByCondition,
+  getOrderProductByCondition,
+} from 'src/core/helpers/sort.helper';
 import { FavoriteProductService } from '../favorite-product/favorite-product.service';
 import { Request } from 'express';
 import { getUserId } from '../user/helper/get-user-id.helper';
@@ -69,27 +72,29 @@ export class DiscountService {
       }
     });
 
-    const [products, count] = await this.productRepository.findAndCount({
-      relations: [
-        'textContent',
-        'textContent.translations',
-        'productUnits',
-        'productUnits.textContent',
-        'productUnits.unit',
-        'productUnits.unit.textContent',
-        'productUnits.unit.textContent.translations',
-        'productUnits.textContent.translations',
-        'discounts',
-      ],
-      where: {
-        isDeleted: 0,
-        id: In(Ids),
-      },
+    const [products, count] = await this.productRepository
+      .createQueryBuilder('product')
+      // Include relations in the query builder
+      .leftJoinAndSelect('product.textContent', 'textContent')
+      .leftJoinAndSelect('textContent.translations', 'translations')
+      .leftJoinAndSelect('product.productUnits', 'productUnits')
+      .leftJoinAndSelect('productUnits.textContent', 'unitTextContent')
+      .leftJoinAndSelect('productUnits.unit', 'unit')
+      .leftJoinAndSelect('unit.textContent', 'unitTextContent2')
+      .leftJoinAndSelect('unitTextContent2.translations', 'translations2')
+      .leftJoinAndSelect('unitTextContent.translations', 'translations3')
+      .leftJoinAndSelect('product.discounts', 'discounts')
+      .leftJoinAndSelect(
+        'product.discountSpecificUsers',
+        'discountSpecificUsers',
+      )
+      .where('product.isDeleted = 0')
+      .andWhere('product.id IN (:...Ids)', { Ids })
+      .orderBy(getOrderProductByCondition(query.sort))
 
-      order: getOrderByCondition(query.sort),
-      take: query.limit,
-      skip: (query.page - 1) * query.limit,
-    });
+      .take(query.limit)
+      .skip((query.page - 1) * query.limit)
+      .getManyAndCount();
 
     const translatedProducts = await Promise.all(
       products.map(async (product) => {
@@ -131,6 +136,7 @@ export class DiscountService {
         });
 
         const discount = product.discounts[0];
+        const discountSpecificUsers = product.discountSpecificUsers[0];
 
         const favoriteProduct =
           await this.favoriteProductService.findOneByUserAndProduct(
@@ -143,8 +149,17 @@ export class DiscountService {
           image: product.image,
           parentCategoryId: product.parentCategoryId,
           isFavorite: favoriteProduct ? true : false,
-          discount: discount ? discount.percent : 0,
-          discountId: discount ? discount.id : null,
+          discount: discount
+            ? discount.percent
+            : discountSpecificUsers
+            ? discountSpecificUsers.percent
+            : 0,
+          discountId: discount
+            ? discount.id
+            : discountSpecificUsers
+            ? discountSpecificUsers.id
+            : null,
+          type: discount ? 'normalDiscount' : 'discountSpecificUsers',
           translatedText: translatedText || product.textContent.originalText,
           translatedProductUnits,
         };

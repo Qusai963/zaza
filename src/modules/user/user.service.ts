@@ -86,6 +86,15 @@ export class UserService {
     return this.userRepository.findOneBy({ id: userId });
   }
 
+  public profile(userId: number) {
+    return this.userRepository.findOne({
+      where: { id: userId },
+      relations: {
+        phones: true,
+      },
+    });
+  }
+
   public findByIdWithRefreshToken(userId: number) {
     return this.userRepository.findOne({
       where: { id: userId },
