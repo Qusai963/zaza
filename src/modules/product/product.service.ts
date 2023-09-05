@@ -56,8 +56,9 @@ export class ProductService {
     parentCategoryId: number = -1,
   ) {
     const userId = getUserId(req);
-    if (query.search.split(':')[1] === '')
-      return { translatedProducts: [], count: 0 };
+    if (query.search)
+      if (query.search.split(':')[1] === '')
+        return { translatedProducts: [], count: 0 };
 
     let qb = this.productRepository
       .createQueryBuilder('product')
@@ -648,6 +649,7 @@ export class ProductService {
     return {
       id: product.id,
       image: product.image,
+      barCode: product.barCode,
       parentCategoryId: product.parentCategoryId,
       isFavorite: product['isFavorite'],
       discount: discount ? discount.percent : 0,

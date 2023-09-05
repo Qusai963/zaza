@@ -9,6 +9,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { StatusEnum } from '../helpers/status-enum';
 
 @Entity()
 export class Order {
@@ -21,8 +22,11 @@ export class Order {
   @CreateDateColumn()
   createdAt: Date;
 
-  @Column({ default: 0 })
-  isApproved: number;
+  @UpdateDateColumn()
+  updatedAt: Date;
+
+  @Column({ type: 'enum', enum: StatusEnum, default: StatusEnum.PENDING })
+  status: string;
 
   @Column()
   totalPrice: number;

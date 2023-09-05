@@ -6,6 +6,7 @@ import { Pagination } from 'src/core/query/pagination.query';
 import { getOrderByCondition } from 'src/core/helpers/sort.helper';
 import { LanguageQuery } from 'src/core/query/language.query';
 import { LanguageCodeEnum } from '../language/helper/language-enum';
+import { UpdateStatusDto } from './dto/update-status.dto';
 
 @Injectable()
 export class OrderService {
@@ -21,9 +22,9 @@ export class OrderService {
     return this.orderRepository.save(order);
   }
 
-  async findMyOrders(userId: number, query: Pagination) {
+  async findMyOrders(userId: number, query: Pagination, status: string) {
     const [orders, count] = await this.orderRepository.findAndCount({
-      where: { userId },
+      where: { userId, status },
       take: query.limit,
       skip: (query.page - 1) * query.limit,
       order: getOrderByCondition(query.sort),
@@ -34,8 +35,11 @@ export class OrderService {
     };
   }
 
-  async findAll(query: Pagination) {
+  async findAll(query: Pagination, status: string) {
     const [orders, count] = await this.orderRepository.findAndCount({
+      where: {
+        status,
+      },
       take: query.limit,
       skip: (query.page - 1) * query.limit,
       relations: {
@@ -49,9 +53,9 @@ export class OrderService {
     };
   }
 
-  async findAllByUserId(userId: number, query: Pagination) {
+  async findAllByUserId(userId: number, query: Pagination, status: string) {
     const [orders, count] = await this.orderRepository.findAndCount({
-      where: { userId },
+      where: { userId, status },
       take: query.limit,
       skip: (query.page - 1) * query.limit,
       relations: {
@@ -227,9 +231,20 @@ export class OrderService {
       id: result.id,
       userId: result.userId,
       createdAt: result.createdAt,
-      isApproved: result.isApproved,
+      status: result.status,
       totalPrice: result.totalPrice,
       products,
     };
+  }
+
+  async updateStatus(id: number, updateStatusDto: UpdateStatusDto) {
+    const order = await this.orderRepository.findOneBy({
+      id,
+    });
+
+    return this.orderRepository.save({
+      ...order,
+      status: updateStatusDto.status,
+    });
   }
 }

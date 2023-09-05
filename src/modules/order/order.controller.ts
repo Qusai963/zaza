@@ -9,6 +9,7 @@ import {
   UseGuards,
   Query,
   Req,
+  Patch,
 } from '@nestjs/common';
 import { OrderService } from './order.service';
 import { AccessTokenGuard } from '../auth/guards/accessToken.guard';
@@ -24,6 +25,10 @@ import { IsAdminGuard } from '../auth/guards/is-admin.guard';
 import { UserNotFoundGuard } from '../user/guards/user-not-found.guard';
 import { Pagination } from 'src/core/query/pagination.query';
 import { LanguageQuery } from 'src/core/query/language.query';
+import { DoesOrderExistGuard } from './guards/does-order-exist.guard';
+import { OrderFilter } from './helpers/order-filter';
+import { UpdateStatusDto } from './dto/update-status.dto';
+import { DoesAdminChangeStatusExistGuard } from './guards/does-admin-change-status.guard';
 
 @Controller('order')
 export class OrderController {
@@ -99,26 +104,48 @@ export class OrderController {
 
   @UseGuards(AccessTokenGuard, IsAdminGuard, UserNotFoundGuard)
   @Get('user/:id')
-  findAllByUserId(@Param('id') userId: number, @Query() query: Pagination) {
-    return this.orderService.findAllByUserId(userId, query);
+  findAllByUserId(
+    @Param('id') userId: number,
+    @Query() filter: OrderFilter,
+    @Query() query: Pagination,
+  ) {
+    return this.orderService.findAllByUserId(userId, query, filter.status);
   }
 
   @UseGuards(AccessTokenGuard, IsAdminGuard)
   @Get()
-  findAll(@Query() query: Pagination) {
-    return this.orderService.findAll(query);
+  findAll(@Query() query: Pagination, @Query() filter: OrderFilter) {
+    return this.orderService.findAll(query, filter.status);
   }
 
   @UseGuards(AccessTokenGuard)
   @Get('user')
-  findMyOrders(@Query() query: Pagination, @Req() req: Request) {
+  findMyOrders(
+    @Query() query: Pagination,
+    @Query() filter: OrderFilter,
+    @Req() req: Request,
+  ) {
     const userId = getUserId(req);
-    return this.orderService.findMyOrders(userId, query);
+    return this.orderService.findMyOrders(userId, query, filter.status);
   }
 
-  @UseGuards(AccessTokenGuard, IsAdminGuard)
+  @UseGuards(AccessTokenGuard, IsAdminGuard, DoesOrderExistGuard)
   @Get(':id')
   findOne(@Param('id') id: string, @Query() language: LanguageQuery) {
     return this.orderService.findOne(+id, language);
+  }
+
+  @UseGuards(
+    AccessTokenGuard,
+    IsAdminGuard,
+    DoesOrderExistGuard,
+    DoesAdminChangeStatusExistGuard,
+  )
+  @Patch(':id')
+  updateStatus(
+    @Param('id') id: string,
+    @Body() updateStatusDto: UpdateStatusDto,
+  ) {
+    return this.orderService.updateStatus(+id, updateStatusDto);
   }
 }
