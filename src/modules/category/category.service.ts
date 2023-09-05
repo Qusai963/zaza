@@ -13,6 +13,7 @@ import { Discount } from '../discount/entities/discount.entity';
 import { FavoriteProduct } from '../favorite-product/entities/favorite-product.entity';
 import { DiscountSpecificUser } from '../discount-specific-user/entities/discount-specific-user.entity';
 import { ProductUnit } from '../product-unit/entities/product-unit.entity';
+import { count } from 'console';
 
 @Injectable()
 export class CategoryService {
@@ -49,7 +50,7 @@ export class CategoryService {
     const categories = await this.categoryRepository
       .createQueryBuilder('category')
       .where('category.parentCategoryId IS NULL')
-      .andWhere('category.isDeleted = :isDeleted', { isDeleted: false })
+      .andWhere('category.isDeleted = 0')
       .take(limit)
       .skip((page - 1) * limit)
       .leftJoinAndSelect('category.textContent', 'textContent')
@@ -66,7 +67,7 @@ export class CategoryService {
           ? translation.translation
           : category.textContent.originalText;
 
-        const productsNumber = await this.dfsCountProducts(category); // Calculate productsNumber
+        const productsNumber = await this.dfsCountProducts(category);
 
         // Create an object with the required properties
         const categoryObject = {
@@ -108,15 +109,16 @@ export class CategoryService {
       ? translatedMainCategory.translation
       : category.textContent.originalText;
 
-    const hasCategories = await this.categoryRepository.findAndCount({
-      where: {
-        parentCategoryId: id,
-        isDeleted: false,
-      },
-      take: limit,
-      skip: (page - 1) * limit,
-      relations: ['textContent', 'textContent.translations'],
-    });
+    const hasCategories = await this.categoryRepository
+      .createQueryBuilder('category')
+      .where('category.parentCategoryId =:id', { id })
+      .andWhere('category.isDeleted = 0')
+      .take(limit)
+      .skip((page - 1) * limit)
+      .leftJoinAndSelect('category.textContent', 'textContent')
+      .leftJoinAndSelect('category.categories', 'categories')
+      .leftJoinAndSelect('textContent.translations', 'translations')
+      .getManyAndCount();
 
     const numberOfCategories = hasCategories[1];
 
@@ -131,10 +133,11 @@ export class CategoryService {
             ? translation.translation
             : category.textContent.originalText;
 
-          const productsNumber = await this.dfsCountProducts(category); // Calculate productsNumber
+          const productsNumber = await this.dfsCountProducts(category); // it returns 0
+
           return {
             id: category.id,
-            productsNumber: 0,
+            productsNumber,
             typeName: category.typeName,
             parentCategoryId: category.parentCategoryId,
             image: category.image,
@@ -144,11 +147,12 @@ export class CategoryService {
         }),
       );
 
+      const productsNumber = await this.dfsCountProducts(category);
       return {
         translatedText: translatedTextForMainCategory,
         id: category.id,
         typeName: category.typeName,
-        productsNumber: 0,
+        productsNumber, // it returns 0
         parentCategoryId: category.parentCategoryId,
         image: category.image,
 
@@ -165,12 +169,11 @@ export class CategoryService {
       await this.productService.findAll(queryFilter, req, id);
 
     if (numberOfProducts > 0) {
-      const productsNumber = await this.dfsCountProducts(category); // Calculate productsNumber
       return {
         typeName: category.typeName,
         id: category.id,
         parentCategoryId: category.parentCategoryId,
-        productsNumber,
+        productsNumber: numberOfProducts,
         image: category.image,
         translatedText: translatedTextForMainCategory,
         count: numberOfProducts,
@@ -311,7 +314,6 @@ export class CategoryService {
   }
 
   async dfsCountProducts(category: Category) {
-    // Mark the function as async
     // Base case: if category has no sub-categories, return the number of products in this category
     if (!category.categories || category.categories.length === 0) {
       return this.productRepository
@@ -334,6 +336,7 @@ export class CategoryService {
     for (const subCategory of category.categories) {
       productCount += await this.dfsCountProducts(subCategory);
     }
+
     return productCount;
   }
 }

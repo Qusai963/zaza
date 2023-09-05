@@ -49,6 +49,7 @@ import { UpdateProductQuantityDto } from './dto/update-product-quantity.dto';
 import { DoesTaxExistInBodyGuard } from '../tax/guards/does-tax-exists-in-body.guard';
 import { TaxIdDto } from './dto/taxId-dto';
 import { ProductUnitIds } from './dto/product-unit-ids.dto';
+import { PaginationWithLanguage } from 'src/core/query/pagination-with-language.query';
 
 @ApiTags('product')
 @Controller('product')
@@ -116,12 +117,12 @@ export class ProductController {
   @UseGuards(AccessTokenGuard)
   @Post('findAllByProductUnitIds')
   findAllByProductUnitIds(
-    @Query() query: QueryFilter,
+    @Query() query: PaginationWithLanguage,
     @Req() req: Request,
     @Body() productUnitIds: ProductUnitIds,
   ) {
     if (productUnitIds.productUnitIds.length == 0)
-      return { count: 0, translatedProducts: [] };
+      return { count: 0, translatedProductUnits: [] };
     return this.productService.findAllByProductUnitIds(
       query,
       req,

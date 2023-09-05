@@ -5,7 +5,6 @@ import { AppService } from './app.service';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
-import { CustomExceptionFilter } from './core/filters/custom-exceptipon-filter';
 //import * as csurf from 'csurf';
 
 async function bootstrap() {
@@ -28,6 +27,6 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe());
   // app.use(csurf());
   //  app.useGlobalFilters(new CustomExceptionFilter());
-  await app.listen(3333);
+  await app.listen(process.env.PORT || 3333);
 }
 bootstrap();

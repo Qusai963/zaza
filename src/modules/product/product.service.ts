@@ -22,6 +22,7 @@ import { Request } from 'express';
 import { getUserId } from '../user/helper/get-user-id.helper';
 import { FavoriteProduct } from '../favorite-product/entities/favorite-product.entity';
 import { DiscountSpecificUser } from '../discount-specific-user/entities/discount-specific-user.entity';
+import { PaginationWithLanguage } from 'src/core/query/pagination-with-language.query';
 
 @Injectable()
 export class ProductService {
@@ -195,24 +196,24 @@ export class ProductService {
   }
 
   async findAllByProductUnitIds(
-    query: QueryFilter,
+    query: PaginationWithLanguage,
     req: Request,
     productUnitIds: number[],
   ) {
     const userId = getUserId(req);
-    let qb = this.productRepository
-      .createQueryBuilder('product')
+    let qb = this.productUnitRepository
+      .createQueryBuilder('productUnits')
+      .leftJoinAndSelect(
+        'productUnits.product',
+        'product',
+        'product.isDeleted = 0',
+      )
       .leftJoinAndSelect(
         'product.discountSpecificUsers',
         'discountSpecificUsers',
       )
       .leftJoinAndSelect('product.textContent', 'textContent')
       .leftJoinAndSelect('textContent.translations', 'translations')
-      .leftJoinAndSelect(
-        'product.productUnits',
-        'productUnits',
-        'productUnits.isDeleted = 0',
-      )
       .leftJoinAndSelect('productUnits.textContent', 'productUnitTextContent')
       .leftJoinAndSelect('productUnits.unit', 'unit', 'unit.isDeleted = 0')
       .leftJoinAndSelect('unit.textContent', 'unitTextContent')
@@ -222,106 +223,65 @@ export class ProductService {
         'productUnitTranslations',
       )
       .leftJoinAndSelect('product.discounts', 'discounts')
-      .where([
+      .where(
+        'productUnits.isDeleted = 0 AND productUnits.id IN (:...productUnitsIds)',
         {
-          ...getWhereByCondition(query.search, -1),
-          isDeleted: 0,
+          productUnitsIds: productUnitIds,
         },
-      ])
-      .andWhere('productUnits.id IN (:...productUnitsIds)', {
-        productUnitsIds: productUnitIds,
-      })
-      .orderBy(getOrderProductByCondition(query.sort))
+      )
       .take(query.limit)
       .skip((query.page - 1) * query.limit);
 
-    if (query.search) {
-      qb = qb.andWhere(
-        new Brackets((qb) => {
-          if (query.search.split(':')[0] == 'name') {
-            if (query.language == 'de') {
-              qb.where('textContent.originalText LIKE :search', {
-                search: `%${query.search.split(':')[1]}%`,
-              });
-            } else {
-              qb.orWhere('translations.translation LIKE :search', {
-                search: `%${query.search.split(':')[1]}%`,
-              }).andWhere('translations.code = :languageCode', {
-                languageCode: query.language,
-              });
-            }
-          } else if (query.search.split(':')[0] == 'barCode') {
-            qb.where('product.barCode LIKE :search', {
-              search: `%${query.search.split(':')[1]}%`,
-            });
-          }
-        }),
-      );
-    }
-
-    let [products, count] = await qb.getManyAndCount();
+    let [productUnits, count] = await qb.getManyAndCount();
 
     // Sort the products based on the provided productUnitIds
-    products = products.sort((a, b) => {
+    productUnits = productUnits.sort((a, b) => {
       const aIndex = productUnitIds.indexOf(
-        a.productUnits[0].id, // Assuming you want to sort by the first productUnit
+        a.id, // Assuming you want to sort by the first productUnit
       );
       const bIndex = productUnitIds.indexOf(
-        b.productUnits[0].id, // Assuming you want to sort by the first productUnit
+        b.id, // Assuming you want to sort by the first productUnit
       );
 
       return aIndex - bIndex;
     });
 
-    const translatedProducts = await Promise.all(
-      products.map(async (product) => {
-        const translation = product.textContent.translations.find(
+    const translatedProductUnits = await Promise.all(
+      productUnits.map(async (productUnit) => {
+        const translation = productUnit.textContent.translations.find(
           (translation) => translation.code === query.language,
         );
 
         const translatedText = translation
           ? translation.translation
-          : product.textContent.originalText;
+          : productUnit.textContent.originalText;
 
-        const translatedProductUnits = await Promise.all(
-          product.productUnits.map(async (unit) => {
-            const unitTranslation = unit.textContent.translations.find(
-              (translation) => translation.code === query.language,
-            );
+        const translatedUnitContent =
+          productUnit.unit.textContent.translations.find(
+            (translation) => translation.code === query.language,
+          );
 
-            const translatedUnitText = unitTranslation
-              ? unitTranslation.translation
-              : unit.textContent.originalText;
+        const translatedUnitContentText = translatedUnitContent
+          ? translatedUnitContent.translation
+          : productUnit.unit.textContent.originalText;
 
-            const translatedUnitContent =
-              unit.unit.textContent.translations.find(
-                (translation) => translation.code === query.language,
-              );
+        const translatedProduct =
+          productUnit.product.textContent.translations.find(
+            (translation) => translation.code === query.language,
+          );
 
-            const translatedUnitContentText = translatedUnitContent
-              ? translatedUnitContent.translation
-              : unit.unit.textContent.originalText;
+        const translatedProductContentText = translatedProduct
+          ? translatedProduct.translation
+          : productUnit.product.textContent.originalText;
 
-            return {
-              id: unit.id,
-              unitId: unit.unitId,
-              quantity: unit.quantity,
-              price: unit.price,
-              translatedText:
-                translatedUnitText || unit.textContent.originalText,
-              translatedUnitText:
-                translatedUnitContentText || unit.unit.textContent.originalText,
-            };
-          }),
-        );
-
-        const discount = product.discounts[0];
-        const discountSpecificUsers = product.discountSpecificUsers[0];
+        const discount = productUnit.product.discounts[0];
+        const discountSpecificUsers =
+          productUnit.product.discountSpecificUsers[0];
 
         const favoriteProduct =
           await this.favoriteProductService.findOneByUserAndProduct(
             userId,
-            product.id,
+            productUnit.product.id,
           );
 
         let discountPercent: number = 0;
@@ -336,24 +296,195 @@ export class ProductService {
         }
 
         return {
-          id: product.id,
-          image: product.image,
-          barCode: +product.barCode,
-          parentCategoryId: product.parentCategoryId,
-          isFavorite: favoriteProduct ? true : false,
-          discount: discountPercent,
-          discountId: discountId,
-          translatedText: translatedText || product.textContent.originalText,
-          translatedProductUnits,
+          id: productUnit.id,
+          unitId: productUnit.unitId,
+          quantity: productUnit.quantity,
+          price: productUnit.price,
+          translatedText:
+            translatedText || productUnit.textContent.originalText,
+          translatedUnitText:
+            translatedUnitContentText ||
+            productUnit.unit.textContent.originalText,
+          product: {
+            id: productUnit.product.id,
+            barCode: productUnit.product.barCode,
+            image: productUnit.product.image,
+            parentCategoryId: productUnit.product.parentCategoryId,
+            createdAt: productUnit.product.createdAt,
+            isFavorite: favoriteProduct ? true : false,
+            discount: discountPercent,
+            discountId: discountId,
+            translatedProduct:
+              translatedProductContentText ||
+              productUnit.product.textContent.originalText,
+          },
         };
       }),
     );
 
-    return {
-      count,
-      translatedProducts,
-    };
+    return { translatedProductUnits, count };
   }
+
+  // async findAllByProductUnitIds(
+  //   query: QueryFilter,
+  //   req: Request,
+  //   productUnitIds: number[],
+  // ) {
+  //   const userId = getUserId(req);
+  //   let qb = this.productRepository
+  //     .createQueryBuilder('product')
+  //     .leftJoinAndSelect(
+  //       'product.discountSpecificUsers',
+  //       'discountSpecificUsers',
+  //     )
+  //     .leftJoinAndSelect('product.textContent', 'textContent')
+  //     .leftJoinAndSelect('textContent.translations', 'translations')
+  //     .leftJoinAndSelect(
+  //       'product.productUnits',
+  //       'productUnits',
+  //       'productUnits.isDeleted = 0',
+  //     )
+  //     .leftJoinAndSelect('productUnits.textContent', 'productUnitTextContent')
+  //     .leftJoinAndSelect('productUnits.unit', 'unit', 'unit.isDeleted = 0')
+  //     .leftJoinAndSelect('unit.textContent', 'unitTextContent')
+  //     .leftJoinAndSelect('unitTextContent.translations', 'unitTranslations')
+  //     .leftJoinAndSelect(
+  //       'productUnitTextContent.translations',
+  //       'productUnitTranslations',
+  //     )
+  //     .leftJoinAndSelect('product.discounts', 'discounts')
+  //     .where([
+  //       {
+  //         ...getWhereByCondition(query.search, -1),
+  //         isDeleted: 0,
+  //       },
+  //     ])
+  //     .andWhere('productUnits.id IN (:...productUnitsIds)', {
+  //       productUnitsIds: productUnitIds,
+  //     })
+  //     .orderBy(getOrderProductByCondition(query.sort))
+  //     .take(query.limit)
+  //     .skip((query.page - 1) * query.limit);
+
+  //   if (query.search) {
+  //     qb = qb.andWhere(
+  //       new Brackets((qb) => {
+  //         if (query.search.split(':')[0] == 'name') {
+  //           if (query.language == 'de') {
+  //             qb.where('textContent.originalText LIKE :search', {
+  //               search: `%${query.search.split(':')[1]}%`,
+  //             });
+  //           } else {
+  //             qb.orWhere('translations.translation LIKE :search', {
+  //               search: `%${query.search.split(':')[1]}%`,
+  //             }).andWhere('translations.code = :languageCode', {
+  //               languageCode: query.language,
+  //             });
+  //           }
+  //         } else if (query.search.split(':')[0] == 'barCode') {
+  //           qb.where('product.barCode LIKE :search', {
+  //             search: `%${query.search.split(':')[1]}%`,
+  //           });
+  //         }
+  //       }),
+  //     );
+  //   }
+
+  //   let [products, count] = await qb.getManyAndCount();
+
+  //   // Sort the products based on the provided productUnitIds
+  //   products = products.sort((a, b) => {
+  //     const aIndex = productUnitIds.indexOf(
+  //       a.productUnits[0].id, // Assuming you want to sort by the first productUnit
+  //     );
+  //     const bIndex = productUnitIds.indexOf(
+  //       b.productUnits[0].id, // Assuming you want to sort by the first productUnit
+  //     );
+
+  //     return aIndex - bIndex;
+  //   });
+
+  //   const translatedProducts = await Promise.all(
+  //     products.map(async (product) => {
+  //       const translation = product.textContent.translations.find(
+  //         (translation) => translation.code === query.language,
+  //       );
+
+  //       const translatedText = translation
+  //         ? translation.translation
+  //         : product.textContent.originalText;
+
+  //       const translatedProductUnits = await Promise.all(
+  //         product.productUnits.map(async (unit) => {
+  //           const unitTranslation = unit.textContent.translations.find(
+  //             (translation) => translation.code === query.language,
+  //           );
+
+  //           const translatedUnitText = unitTranslation
+  //             ? unitTranslation.translation
+  //             : unit.textContent.originalText;
+
+  //           const translatedUnitContent =
+  //             unit.unit.textContent.translations.find(
+  //               (translation) => translation.code === query.language,
+  //             );
+
+  //           const translatedUnitContentText = translatedUnitContent
+  //             ? translatedUnitContent.translation
+  //             : unit.unit.textContent.originalText;
+
+  //           return {
+  //             id: unit.id,
+  //             unitId: unit.unitId,
+  //             quantity: unit.quantity,
+  //             price: unit.price,
+  //             translatedText:
+  //               translatedUnitText || unit.textContent.originalText,
+  //             translatedUnitText:
+  //               translatedUnitContentText || unit.unit.textContent.originalText,
+  //           };
+  //         }),
+  //       );
+
+  //       const discount = product.discounts[0];
+  //       const discountSpecificUsers = product.discountSpecificUsers[0];
+
+  //       const favoriteProduct =
+  //         await this.favoriteProductService.findOneByUserAndProduct(
+  //           userId,
+  //           product.id,
+  //         );
+
+  //       let discountPercent: number = 0;
+  //       let discountId: any = null;
+
+  //       if (discount) {
+  //         discountPercent = discount.percent;
+  //         discountId = discount.id;
+  //       } else if (discountSpecificUsers) {
+  //         discountPercent = discountSpecificUsers.percent;
+  //         discountId = discountSpecificUsers.id;
+  //       }
+
+  //       return {
+  //         id: product.id,
+  //         image: product.image,
+  //         barCode: +product.barCode,
+  //         parentCategoryId: product.parentCategoryId,
+  //         isFavorite: favoriteProduct ? true : false,
+  //         discount: discountPercent,
+  //         discountId: discountId,
+  //         translatedText: translatedText || product.textContent.originalText,
+  //         translatedProductUnits,
+  //       };
+  //     }),
+  //   );
+
+  //   return {
+  //     count,
+  //     translatedProducts,
+  //   };
+  // }
 
   findOne(id: number) {
     return this.productRepository.findOneBy({ id, isDeleted: 0 });

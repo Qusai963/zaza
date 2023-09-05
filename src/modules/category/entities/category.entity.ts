@@ -14,7 +14,7 @@ import { CategoryTypeEnum } from '../constants/category-enum';
 @Entity()
 export class Category {
   @PrimaryGeneratedColumn()
-  id: number;ح
+  id: number;
 
   @Column({ default: null })
   parentCategoryId: number;
