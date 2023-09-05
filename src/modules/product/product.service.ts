@@ -246,7 +246,7 @@ export class ProductService {
       return aIndex - bIndex;
     });
 
-    const translatedProductUnits = await Promise.all(
+    const translatedProducts = await Promise.all(
       productUnits.map(async (productUnit) => {
         const translation = productUnit.textContent.translations.find(
           (translation) => translation.code === query.language,
@@ -296,33 +296,34 @@ export class ProductService {
         }
 
         return {
-          id: productUnit.id,
-          unitId: productUnit.unitId,
-          quantity: productUnit.quantity,
-          price: productUnit.price,
+          id: productUnit.product.id,
+          barCode: productUnit.product.barCode,
+          image: productUnit.product.image,
+          parentCategoryId: productUnit.product.parentCategoryId,
+          isFavorite: favoriteProduct ? true : false,
+          discount: discountPercent,
+          discountId: discountId,
           translatedText:
-            translatedText || productUnit.textContent.originalText,
-          translatedUnitText:
-            translatedUnitContentText ||
-            productUnit.unit.textContent.originalText,
-          product: {
-            id: productUnit.product.id,
-            barCode: productUnit.product.barCode,
-            image: productUnit.product.image,
-            parentCategoryId: productUnit.product.parentCategoryId,
-            createdAt: productUnit.product.createdAt,
-            isFavorite: favoriteProduct ? true : false,
-            discount: discountPercent,
-            discountId: discountId,
-            translatedProduct:
-              translatedProductContentText ||
-              productUnit.product.textContent.originalText,
-          },
+            translatedProductContentText ||
+            productUnit.product.textContent.originalText,
+          translatedProductUnits: [
+            {
+              id: productUnit.id,
+              unitId: productUnit.unitId,
+              quantity: productUnit.quantity,
+              price: productUnit.price,
+              translatedText:
+                translatedText || productUnit.textContent.originalText,
+              translatedUnitText:
+                translatedUnitContentText ||
+                productUnit.unit.textContent.originalText,
+            },
+          ],
         };
       }),
     );
 
-    return { translatedProductUnits, count };
+    return { translatedProducts, count };
   }
 
   // async findAllByProductUnitIds(

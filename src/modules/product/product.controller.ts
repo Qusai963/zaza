@@ -122,7 +122,7 @@ export class ProductController {
     @Body() productUnitIds: ProductUnitIds,
   ) {
     if (productUnitIds.productUnitIds.length == 0)
-      return { count: 0, translatedProductUnits: [] };
+      return { count: 0, translatedProducts: [] };
     return this.productService.findAllByProductUnitIds(
       query,
       req,
