@@ -147,6 +147,7 @@ export class DiscountService {
         return {
           id: product.id,
           image: product.image,
+          barCode: product.barCode,
           parentCategoryId: product.parentCategoryId,
           isFavorite: favoriteProduct ? true : false,
           discount: discount

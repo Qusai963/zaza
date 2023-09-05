@@ -43,6 +43,7 @@ export class OrderController {
     @Req() req: Request,
   ) {
     const userId = getUserId(req);
+
     const order = await this.orderService.create(userId);
 
     const productOrders = await this.productOrderService.create(
@@ -51,15 +52,26 @@ export class OrderController {
     );
 
     const totalPricePromises = productOrders.map(async (productOrder) => {
-      const totalDiscountedPriceQuery = this.productOrderRepository
+      const totalDiscountedPriceQuery = await this.productOrderRepository
         .createQueryBuilder('po')
         .leftJoinAndSelect('po.productUnit', 'pu')
         .leftJoinAndSelect('pu.product', 'p')
         .leftJoinAndSelect('p.discounts', 'd')
         .leftJoinAndSelect('p.discountSpecificUsers', 'dsu')
         .where('po.id = :id', { id: productOrder.id })
-        .select(
-          'po.amount * (pu.price - COALESCE(d.percent / 10, dsu.percent / 10, 0))',
+        .addSelect(
+          `
+        CASE
+          WHEN d.percent IS NOT NULL AND dsu.percent IS NOT NULL THEN
+            po.amount * pu.price * (1 - (d.percent / 100))
+          WHEN d.percent IS NOT NULL THEN
+            po.amount * pu.price * (1 - (d.percent / 100))
+          WHEN dsu.percent IS NOT NULL THEN
+            po.amount * pu.price * (1 - (dsu.percent / 100))
+          ELSE
+            po.amount * pu.price
+        END
+      `,
           'discountedPrice',
         )
         .getRawOne();

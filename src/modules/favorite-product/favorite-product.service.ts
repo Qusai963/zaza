@@ -186,6 +186,11 @@ export class FavoriteProductService {
     };
   }
 
+  findOneByUser(userId: number) {
+    return this.favoriteProductRepository.findOneBy({
+      userId,
+    });
+  }
   findOneByUserAndProduct(userId: number, productId: number) {
     return this.favoriteProductRepository.findOneBy({
       userId,

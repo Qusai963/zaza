@@ -29,8 +29,11 @@ export class FavoriteProductController {
 
   @UseGuards(AccessTokenGuard)
   @Get()
-  findAll(@Req() req: Request, @Query() query: QueryFilter) {
+  async findAll(@Req() req: Request, @Query() query: QueryFilter) {
     const userId = getUserId(req);
+    const favorite = await this.favoriteProductService.findOneByUser(userId);
+    if (!favorite) return { translatedProducts: [], count: 0 };
+
     return this.favoriteProductService.findAllByUserId(userId, query, req);
   }
 }
