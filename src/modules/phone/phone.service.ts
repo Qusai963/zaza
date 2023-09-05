@@ -13,14 +13,16 @@ export class PhoneService {
   ) {}
   async create(createMultiPhoneDto: CreateMultiPhoneDto, userId: number) {
     const phones = createMultiPhoneDto.phoneNumbers;
+    let savedPhone = [];
     for (let phone of phones) {
       const createdPhone = this.phoneRepository.create({
         ...phone,
         userId,
       });
-      await this.phoneRepository.save(createdPhone);
+      savedPhone.push(createdPhone);
     }
-    return { phones };
+    await this.phoneRepository.save(savedPhone);
+    return { phones: savedPhone };
   }
 
   findOne(id: number) {
