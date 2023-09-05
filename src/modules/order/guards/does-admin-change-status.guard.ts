@@ -21,7 +21,7 @@ export class DoesAdminChangeStatusExistGuard implements CanActivate {
 
     const order = await this.orderRepository.findOneBy({ id });
 
-    if (order.status != StatusEnum.PENDING)
+  if (order.status != StatusEnum.PENDING)
       throw new ForbiddenException('Status already Changed');
     return true;
   }

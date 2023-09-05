@@ -182,7 +182,7 @@ export class ProductService {
         return {
           id: product.id,
           image: product.image,
-          barCode: +product.barCode,
+          barCode: product.barCode,
           parentCategoryId: product.parentCategoryId,
           isFavorite: favoriteProduct ? true : false,
           discount: discountPercent,
@@ -474,7 +474,7 @@ export class ProductService {
   //       return {
   //         id: product.id,
   //         image: product.image,
-  //         barCode: +product.barCode,
+  //         barCode: product.barCode,
   //         parentCategoryId: product.parentCategoryId,
   //         isFavorite: favoriteProduct ? true : false,
   //         discount: discountPercent,
