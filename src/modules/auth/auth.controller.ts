@@ -7,7 +7,6 @@ import {
   HttpStatus,
   HttpCode,
   Inject,
-  InternalServerErrorException,
   Req,
 } from '@nestjs/common';
 import { AccessTokenGuard } from './guards/accessToken.guard';
@@ -19,7 +18,6 @@ import { CreateUserDto } from '../user/dto/create-user.dto';
 import { getUserId } from '../user/helper/get-user-id.helper';
 import { DoesUserExistGuard } from '../user/guards/does-user-exist.guard';
 import { LocalAuthGuard } from './guards/local-auth.guard';
-import { catchingError } from 'src/core/error/helper/catching-error';
 import { IsAdminGuard } from './guards/is-admin.guard';
 import { ApiTags } from '@nestjs/swagger';
 import { RefreshTokenGuard } from './guards/refreshToken.guard';

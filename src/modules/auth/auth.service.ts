@@ -1,6 +1,5 @@
 import { SignInDto } from './dto/sign-in.dto';
 import { ForbiddenException, Injectable } from '@nestjs/common';
-import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { Repository } from 'typeorm';
 import { UserService } from '../user/user.service';

@@ -187,6 +187,7 @@ export class ProductService {
           isFavorite: favoriteProduct ? true : false,
           discount: discountPercent,
           discountId: discountId,
+          type: discount ? 'normalDiscount' : 'discountSpecificUsers',
           translatedText: translatedText || product.textContent.originalText,
           translatedProductUnits,
         };
@@ -307,6 +308,7 @@ export class ProductService {
           isFavorite: favoriteProduct ? true : false,
           discount: discountPercent,
           discountId: discountId,
+          type: discount ? 'normalDiscount' : 'discountSpecificUsers',
           translatedText:
             translatedProductContentText ||
             productUnit.product.textContent.originalText,
@@ -573,6 +575,10 @@ export class ProductService {
       .leftJoinAndSelect('unit.textContent', 'unitTextContent')
       .leftJoinAndSelect('unitTextContent.translations', 'unitTranslations')
       .leftJoinAndSelect('product.discounts', 'discounts')
+      .leftJoinAndSelect(
+        'product.discountSpecificUsers',
+        'discountSpecificUsers',
+      )
       .leftJoinAndSelect('product.tax', 'tax', 'product.taxId IS NOT NULL')
       .leftJoinAndSelect('tax.textContent', 'taxTextContent')
       .leftJoinAndSelect('taxTextContent.translations', 'taxTranslation')
@@ -625,6 +631,19 @@ export class ProductService {
 
     const discount = product.discounts[0];
 
+    const discountSpecificUsers = product.discountSpecificUsers[0];
+
+    let discountPercent: number = 0;
+    let discountId: any = null;
+
+    if (discount) {
+      discountPercent = discount.percent;
+      discountId = discount.id;
+    } else if (discountSpecificUsers) {
+      discountPercent = discountSpecificUsers.percent;
+      discountId = discountSpecificUsers.id;
+    }
+
     let taxTranslation = null,
       translatedTaxPercent = null,
       taxPercent = 0;
@@ -654,6 +673,7 @@ export class ProductService {
       isFavorite: product['isFavorite'],
       discount: discount ? discount.percent : 0,
       discountId: discount ? discount.id : null,
+      type: discount ? 'normalDiscount' : 'discountSpecificUsers',
       translatedText: translatedText || product.textContent.originalText,
       translatedProductUnits,
       translatedTaxPercent,
