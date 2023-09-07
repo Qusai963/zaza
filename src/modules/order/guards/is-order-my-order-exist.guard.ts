@@ -2,7 +2,7 @@ import {
   Injectable,
   CanActivate,
   ExecutionContext,
-  NotFoundException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Order } from '../entities/order.entity';
@@ -22,7 +22,7 @@ export class IsOrderMyOrderGuard implements CanActivate {
 
     const order = await this.orderRepository.findOneBy({ id, userId });
 
-    if (!order) throw new NotFoundException('It is not your order');
+    if (!order) throw new ForbiddenException('It is not your order');
     return true;
   }
 }

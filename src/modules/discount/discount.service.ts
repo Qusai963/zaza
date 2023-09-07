@@ -72,6 +72,12 @@ export class DiscountService {
       }
     });
 
+    if (Ids.length === 0)
+      return {
+        count: 0,
+        translatedProducts: [],
+      };
+
     const [products, count] = await this.productRepository
       .createQueryBuilder('product')
       // Include relations in the query builder

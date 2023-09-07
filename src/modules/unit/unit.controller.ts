@@ -32,7 +32,6 @@ import { LanguageQuery } from 'src/core/query/language.query';
 export class UnitController {
   constructor(
     private readonly unitService: UnitService,
-    @Inject(REQUEST) private readonly request: Request,
     private readonly textContentService: TextContentService,
     private readonly translationService: TranslationService,
   ) {}
@@ -66,7 +65,7 @@ export class UnitController {
     return this.unitService.findAll(code.language);
   }
 
-  @UseGuards(AccessTokenGuard, IsAdminGuard)
+  @UseGuards(AccessTokenGuard, IsAdminGuard, DoesUnitExistGuard)
   @Get(':id')
   findOne(@Param('id') id: string, @Query() code: LanguageQuery) {
     return this.unitService.findByCode(+id, code.language);
