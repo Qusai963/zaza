@@ -29,6 +29,7 @@ import { DoesOrderExistGuard } from './guards/does-order-exist.guard';
 import { OrderFilter } from './helpers/order-filter';
 import { UpdateStatusDto } from './dto/update-status.dto';
 import { DoesAdminChangeStatusExistGuard } from './guards/does-admin-change-status.guard';
+import { CanUserGetOrderGuard } from './guards/can-user-get-order-exist.guard';
 
 @Controller('order')
 export class OrderController {
@@ -129,7 +130,7 @@ export class OrderController {
     return this.orderService.findMyOrders(userId, query, filter.status);
   }
 
-  @UseGuards(AccessTokenGuard, IsAdminGuard, DoesOrderExistGuard)
+  @UseGuards(AccessTokenGuard, DoesOrderExistGuard, CanUserGetOrderGuard)
   @Get(':id')
   findOne(@Param('id') id: string, @Query() language: LanguageQuery) {
     return this.orderService.findOne(+id, language);
