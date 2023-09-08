@@ -5,7 +5,6 @@ import {
   Post,
   Body,
   Param,
-  Delete,
   UseGuards,
   Query,
   Req,

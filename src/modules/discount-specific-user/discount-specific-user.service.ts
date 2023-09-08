@@ -77,7 +77,7 @@ export class DiscountSpecificUserService {
     const [discountSpecificUser, count] =
       await this.discountSpecificUserRepository
         .createQueryBuilder('discountSpecificUser')
-        .andWhere('discountSpecificUser.userId = :userId', { userId })
+        .where('discountSpecificUser.userId = :userId', { userId })
         .leftJoin('discountSpecificUser.product', 'product')
         .leftJoin('product.textContent', 'textContent')
         .select([
@@ -89,7 +89,7 @@ export class DiscountSpecificUserService {
           'product.image',
           'textContent.originalText',
         ])
-        .where('product.isDeleted = 0')
+        .andWhere('product.isDeleted = 0')
         .getManyAndCount();
 
     return { count, discountSpecificUser };
