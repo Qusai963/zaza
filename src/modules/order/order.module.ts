@@ -18,9 +18,6 @@ import { DiscountService } from '../discount/discount.service';
 import { Discount } from '../discount/entities/discount.entity';
 import { Product } from '../product/entities/product.entity';
 import { DiscountSpecificUser } from '../discount-specific-user/entities/discount-specific-user.entity';
-import { CanUserGetOrderGuard } from './guards/can-user-get-order-exist.guard';
-import { IsAdminGuard } from '../auth/guards/is-admin.guard';
-import { IsOrderMyOrderGuard } from './guards/is-order-my-order-exist.guard';
 
 @Module({
   imports: [
@@ -46,9 +43,6 @@ import { IsOrderMyOrderGuard } from './guards/is-order-my-order-exist.guard';
     TextContentService,
     TranslationService,
     DiscountService,
-    IsAdminGuard,
-    CanUserGetOrderGuard,
-    IsOrderMyOrderGuard,
   ],
 })
 export class OrderModule {}
