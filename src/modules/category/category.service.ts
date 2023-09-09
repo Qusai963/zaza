@@ -1,7 +1,7 @@
 import { ProductService } from './../product/product.service';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Not, In } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import { Category } from './entities/category.entity';
 import { TextContent } from '../text-content/entities/text-content.entity';
 import { CategoryTypeEnum } from './constants/category-enum';
@@ -13,7 +13,6 @@ import { Discount } from '../discount/entities/discount.entity';
 import { FavoriteProduct } from '../favorite-product/entities/favorite-product.entity';
 import { DiscountSpecificUser } from '../discount-specific-user/entities/discount-specific-user.entity';
 import { ProductUnit } from '../product-unit/entities/product-unit.entity';
-import { count } from 'console';
 
 @Injectable()
 export class CategoryService {

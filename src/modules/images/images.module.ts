@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { ImagesController } from './images.controller';
 import { ImagesService } from './images.service';
 import { MulterModule } from '@nestjs/platform-express';
 import { CategoryService } from '../category/category.service';
@@ -25,11 +24,10 @@ import { DiscountSpecificUser } from '../discount-specific-user/entities/discoun
       FavoriteProduct,
       DiscountSpecificUser,
     ]),
-    MulterModule.register({
-      dest: '../uploads',
-    }),
+    // MulterModule.register({
+    //   dest: '../uploads',
+    // }),
   ],
-  controllers: [ImagesController],
   providers: [
     ImagesService,
     CategoryService,

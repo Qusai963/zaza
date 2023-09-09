@@ -23,9 +23,9 @@ import { DiscountSpecificUser } from '../discount-specific-user/entities/discoun
 
 @Module({
   imports: [
-    MulterModule.register({
-      dest: '../uploads',
-    }),
+    // MulterModule.register({
+    //   dest: '../uploads',
+    // }),
     TypeOrmModule.forFeature([
       Category,
       TextContent,
