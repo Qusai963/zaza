@@ -26,7 +26,7 @@ export const dataSourceOptions: DataSourceOptions = {
   port: Number(process.env.DB_PORT),
   username: process.env.DB_USER,
   password: process.env.DB_PASS,
-  database: process.env.DB_NAME_DEVELOPMENT,
+  database: process.env.DB_NAME_PRODUCTION,
   url: process.env.MYSQL_URL,
   entities: [
     User,
