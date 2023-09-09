@@ -49,9 +49,9 @@ import { CategoryType } from './modules/category/entities/category-type.entity';
     AuthModule,
     TaxModule,
     ProductUnitModule,
-    // MulterModule.register({
-    //   dest: '../uploads',
-    // }),
+    MulterModule.register({
+      dest: '../uploads',
+    }),
     UnitModule,
   ],
   controllers: [],

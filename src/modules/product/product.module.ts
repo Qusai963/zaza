@@ -42,9 +42,9 @@ import { DiscountSpecificUser } from '../discount-specific-user/entities/discoun
       FavoriteProduct,
       DiscountSpecificUser,
     ]),
-    // MulterModule.register({
-    //   dest: '../uploads',
-    // }),
+    MulterModule.register({
+      dest: '../uploads',
+    }),
   ],
   controllers: [ProductController],
   providers: [

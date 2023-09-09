@@ -24,9 +24,9 @@ import { DiscountSpecificUser } from '../discount-specific-user/entities/discoun
       FavoriteProduct,
       DiscountSpecificUser,
     ]),
-    // MulterModule.register({
-    //   dest: '../uploads',
-    // }),
+    MulterModule.register({
+      dest: '../uploads',
+    }),
   ],
   providers: [
     ImagesService,

@@ -8,9 +8,11 @@ import { join } from 'path';
 //import * as csurf from 'csurf';
 
 async function bootstrap() {
+  console.log('================================');
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   app.enableCors();
   app.useStaticAssets(join(__dirname, '..', '..', '..', 'uploads'));
+  console.log('++++++++++++++++++++++++++++++++');
 
   const appService = app.get(AppService);
   await appService.seed();
