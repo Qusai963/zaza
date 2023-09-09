@@ -26,8 +26,8 @@ export class User {
   @Column({ select: false })
   password: string;
 
-  @Column({ select: false })
-  refreshToken: string;
+  @Column({ select: false, nullable: true })
+  refreshToken: string | null;
 
   @Column({ unique: true })
   email: string;
