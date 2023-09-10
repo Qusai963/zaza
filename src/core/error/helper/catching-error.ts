@@ -1,5 +1,5 @@
 import { HttpException, HttpStatus } from '@nestjs/common';
-import { INTERNAL_SERVER_ERROR } from '../messages/Internal-server-error.message';
+import { INTERNAL_SERVER_ERROR } from '../messages/internal-server-error.message';
 import { Request } from 'express';
 import { getLanguageFromRequest } from 'src/modules/language/helper/get-language-code.helper';
 
