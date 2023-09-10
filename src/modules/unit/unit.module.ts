@@ -15,6 +15,7 @@ import { LanguageService } from '../language/language.service';
 import { ProductUnitModule } from '../product-unit/product-unit.module';
 import { ProductUnitService } from '../product-unit/product-unit.service';
 import { ProductUnit } from '../product-unit/entities/product-unit.entity';
+import { UserResetPassword } from '../user/entities/user-reset-password.entity';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { ProductUnit } from '../product-unit/entities/product-unit.entity';
       Translation,
       Language,
       ProductUnit,
+      UserResetPassword,
     ]),
     ProductUnitModule,
   ],

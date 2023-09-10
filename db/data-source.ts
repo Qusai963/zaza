@@ -14,6 +14,7 @@ import { Tax } from 'src/modules/tax/entities/tax.entity';
 import { TextContent } from 'src/modules/text-content/entities/text-content.entity';
 import { Translation } from 'src/modules/translation/entities/translation.entity';
 import { Unit } from 'src/modules/unit/entities/unit.entity';
+import { UserResetPassword } from 'src/modules/user/entities/user-reset-password.entity';
 import { User } from 'src/modules/user/entities/user.entity';
 import { DataSource, DataSourceOptions } from 'typeorm';
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
@@ -28,24 +29,26 @@ export const dataSourceOptions: DataSourceOptions = {
   password: process.env.DB_PASS,
   database: process.env.DB_NAME_PRODUCTION,
   url: process.env.MYSQL_URL,
-  entities: [
-    User,
-    Language,
-    TextContent,
-    Translation,
-    Tax,
-    Category,
-    Discount,
-    Product,
-    Phone,
-    Unit,
-    ProductUnit,
-    CategoryType,
-    Order,
-    ProductOrder,
-    DiscountSpecificUser,
-    FavoriteProduct,
-  ],
+  entities: ['dist/**/*.entity.js'],
+  // entities: [
+  //   User,
+  //   Language,
+  //   TextContent,
+  //   Translation,
+  //   Tax,
+  //   Category,
+  //   Discount,
+  //   Product,
+  //   Phone,
+  //   Unit,
+  //   ProductUnit,
+  //   CategoryType,
+  //   Order,
+  //   ProductOrder,
+  //   DiscountSpecificUser,
+  //   FavoriteProduct,
+  //   UserResetPassword,
+  // ],
   synchronize: true,
   logging: false,
   namingStrategy: new SnakeNamingStrategy(),
@@ -53,4 +56,3 @@ export const dataSourceOptions: DataSourceOptions = {
 
 const dataSource = new DataSource(dataSourceOptions);
 export default dataSource;
-//  entities: ['dist/**/*.entity.js'],

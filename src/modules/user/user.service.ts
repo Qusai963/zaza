@@ -1,16 +1,26 @@
-import { Injectable, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  ForbiddenException,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import { PaginationWithSearch } from 'src/core/query/pagination-with-search.query';
 import { getOrderUserByCondition } from 'src/core/helpers/sort.helper';
+import { UserResetPassword } from './entities/user-reset-password.entity';
+import { MailerService } from '@nestjs-modules/mailer';
+import * as crypto from 'crypto';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    @InjectRepository(UserResetPassword)
+    private readonly userResetPasswordRepository: Repository<UserResetPassword>,
+    private readonly mailerService: MailerService,
   ) {}
   create(createUserDto: CreateUserDto) {
     const user = this.userRepository.create(createUserDto);
@@ -117,5 +127,32 @@ export class UserService {
     user.refreshToken = hashedRefreshToken;
 
     await this.userRepository.save(user);
+  }
+
+  async sendPasswordReset(email: string) {
+    const user = await this.userRepository.findOne({
+      where: { email },
+      relations: {
+        userResetPassword: true,
+      },
+    });
+    if (!user) throw new NotFoundException('No user found with this email.');
+
+    const userReset = user.userResetPassword[0];
+    userReset.resetToken = crypto.randomBytes(32).toString('hex');
+    const expireDate = new Date();
+    expireDate.setHours(expireDate.getHours() + 1);
+    userReset.resetTokenExpire = expireDate;
+
+    await this.userResetPasswordRepository.save(user);
+
+    const mail = {
+      to: user.email,
+      from: 'noreply@example.com',
+      subject: 'Password Reset',
+      text: `Hello ${user.userName}, to reset your password, please click on the following link: http://localhost:3000/reset-password?token=${userReset.resetToken}`,
+    };
+
+    await this.mailerService.sendMail(mail);
   }
 }

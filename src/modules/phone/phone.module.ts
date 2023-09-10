@@ -6,9 +6,10 @@ import { UserService } from '../user/user.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from '../user/entities/user.entity';
 import { Phone } from './entities/phone.entity';
+import { UserResetPassword } from '../user/entities/user-reset-password.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, Phone])],
+  imports: [TypeOrmModule.forFeature([User, Phone, UserResetPassword])],
   controllers: [PhoneController],
   providers: [PhoneService, JwtService, UserService],
 })

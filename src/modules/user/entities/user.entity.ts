@@ -2,7 +2,6 @@ import { DiscountSpecificUser } from 'src/modules/discount-specific-user/entitie
 import { FavoriteProduct } from 'src/modules/favorite-product/entities/favorite-product.entity';
 import { Order } from 'src/modules/order/entities/order.entity';
 import { Phone } from 'src/modules/phone/entities/phone.entity';
-import { Product } from 'src/modules/product/entities/product.entity';
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -11,6 +10,7 @@ import {
   OneToOne,
   CreateDateColumn,
 } from 'typeorm';
+import { UserResetPassword } from './user-reset-password.entity';
 
 @Entity('users')
 export class User {
@@ -46,6 +46,12 @@ export class User {
 
   @OneToMany(() => Phone, (phone) => phone.user)
   phones: Phone[];
+
+  @OneToOne(
+    () => UserResetPassword,
+    (userResetPassword) => userResetPassword.user,
+  )
+  userResetPassword: UserResetPassword;
 
   @OneToMany(() => FavoriteProduct, (favoriteProducts) => favoriteProducts.user)
   favoriteProducts: FavoriteProduct[];

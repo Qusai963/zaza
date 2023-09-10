@@ -27,6 +27,7 @@ import { Language } from './modules/language/entities/language.entity';
 import { AppService } from './app.service';
 import { ProductUnitModule } from './modules/product-unit/product-unit.module';
 import { CategoryType } from './modules/category/entities/category-type.entity';
+import { MailModule } from './mail/mail.module';
 
 @Module({
   imports: [
@@ -53,6 +54,7 @@ import { CategoryType } from './modules/category/entities/category-type.entity';
       dest: '../uploads',
     }),
     UnitModule,
+    MailModule,
   ],
   controllers: [],
   providers: [AuthService, JwtService, LanguageService, AppService],

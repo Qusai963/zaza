@@ -13,6 +13,7 @@ import { Category } from '../category/entities/category.entity';
 import { FavoriteProduct } from '../favorite-product/entities/favorite-product.entity';
 import { FavoriteProductService } from '../favorite-product/favorite-product.service';
 import { DiscountSpecificUser } from '../discount-specific-user/entities/discount-specific-user.entity';
+import { UserResetPassword } from '../user/entities/user-reset-password.entity';
 
 @Global()
 @Module({
@@ -20,6 +21,7 @@ import { DiscountSpecificUser } from '../discount-specific-user/entities/discoun
     TypeOrmModule.forFeature([
       Discount,
       User,
+      UserResetPassword,
       Product,
       ProductUnit,
       Category,

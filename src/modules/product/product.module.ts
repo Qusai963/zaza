@@ -25,6 +25,7 @@ import { Discount } from '../discount/entities/discount.entity';
 import { FavoriteProductService } from '../favorite-product/favorite-product.service';
 import { FavoriteProduct } from '../favorite-product/entities/favorite-product.entity';
 import { DiscountSpecificUser } from '../discount-specific-user/entities/discount-specific-user.entity';
+import { UserResetPassword } from '../user/entities/user-reset-password.entity';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { DiscountSpecificUser } from '../discount-specific-user/entities/discoun
       Discount,
       FavoriteProduct,
       DiscountSpecificUser,
+      UserResetPassword,
     ]),
     MulterModule.register({
       dest: '../uploads',

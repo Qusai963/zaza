@@ -13,6 +13,7 @@ import { Discount } from '../discount/entities/discount.entity';
 import { Category } from '../category/entities/category.entity';
 import { ProductUnit } from '../product-unit/entities/product-unit.entity';
 import { DiscountSpecificUser } from '../discount-specific-user/entities/discount-specific-user.entity';
+import { UserResetPassword } from '../user/entities/user-reset-password.entity';
 
 @Global()
 @Module({
@@ -25,6 +26,7 @@ import { DiscountSpecificUser } from '../discount-specific-user/entities/discoun
       Category,
       ProductUnit,
       DiscountSpecificUser,
+      UserResetPassword,
     ]),
     ProductModule,
   ],

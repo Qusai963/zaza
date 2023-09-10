@@ -18,6 +18,7 @@ import { DiscountService } from '../discount/discount.service';
 import { Discount } from '../discount/entities/discount.entity';
 import { Product } from '../product/entities/product.entity';
 import { DiscountSpecificUser } from '../discount-specific-user/entities/discount-specific-user.entity';
+import { UserResetPassword } from '../user/entities/user-reset-password.entity';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { DiscountSpecificUser } from '../discount-specific-user/entities/discoun
       Discount,
       Product,
       DiscountSpecificUser,
+      UserResetPassword,
     ]),
   ],
   controllers: [OrderController],

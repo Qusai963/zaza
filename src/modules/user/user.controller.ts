@@ -59,4 +59,9 @@ export class UserController {
   remove(@Param('id') id: string) {
     return this.userService.remove(+id);
   }
+
+  @Post('reset-password')
+  async resetPassword(@Body('email') email: string) {
+    return this.userService.sendPasswordReset(email);
+  }
 }
